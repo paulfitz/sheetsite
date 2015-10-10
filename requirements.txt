@@ -1,0 +1,3 @@
+gspread == 0.2.5
+oauth2client == 1.5.1
+xlwt == 1.0.0
