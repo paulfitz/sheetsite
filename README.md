@@ -1,4 +1,9 @@
 ```
+pip install sheetsite
+```
+
+
+```
 Please call as:
   sheetsite.py 2LvBgFeYzI9GeN2PTn5klcwBFFFeROlbwvTVF2qAIuBk credential.json save.xls
 To:
