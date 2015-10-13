@@ -4,14 +4,7 @@ import argparse
 import os
 import sys
 
-if __name__ == '__main__' and __package__ is None:
-    from os import sys, path
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
-from spreadsheet import Spreadsheet
-
-if __name__ == '__main__':
-
+def run():
     parser = argparse.ArgumentParser(description='Fetch a google spreadsheet.')
     parser.add_argument('--credential', nargs=1, required=True, help='credential json file '
                         'from google, see http://gspread.readthedocs.org/en/latest/oauth2.html '
@@ -23,7 +16,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    ss = Spreadsheet()
+    ss = sheetsite.Spreadsheet()
     ss.connect(args.credential[0])
     ss.load_remote(args.spreadsheet_key)
     ss.save_local(args.output_file)

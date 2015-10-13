@@ -28,7 +28,7 @@ setup(
     keywords = "google sheet xls json",
     url = "https://github.com/paulfitz/sheetsite",
     packages=['sheetsite'],
-    scripts=['sheetsite/sheetsite.py'],
+    scripts=['bin/sheetsite'],
     long_description=read('README', 'README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
