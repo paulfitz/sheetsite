@@ -21,7 +21,7 @@ be made public.
 
 4. Make sure you share the sheet with the email address in the OAuth2 credentials.  Read-only permission is fine.
 
-5. `sheetsite.py --credential credential.json 2LvBgFe...F2qAIuBk output.json` (or `output.xls`)
+5. `sheetsite --credential credential.json 2LvBgFe...F2qAIuBk output.json` (or `output.xls`)
 
 6. Build a website around the json, as for example http://datacommons.coop/tap/ = https://github.com/datacommons/tap
 
