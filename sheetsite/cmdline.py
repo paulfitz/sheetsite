@@ -3,6 +3,7 @@
 import argparse
 import os
 import sys
+from sheetsite.spreadsheet import Spreadsheet
 
 def run():
     parser = argparse.ArgumentParser(description='Fetch a google spreadsheet.')
@@ -16,7 +17,7 @@ def run():
 
     args = parser.parse_args()
 
-    ss = sheetsite.Spreadsheet()
+    ss = Spreadsheet()
     ss.connect(args.credential[0])
     ss.load_remote(args.spreadsheet_key)
     ss.save_local(args.output_file)

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-import sheetsite
+from sheetsite.cmdline import run
 
 if __name__ == '__main__':
 
-    sheetsite.run()
+    run()
