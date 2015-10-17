@@ -38,7 +38,8 @@ setup(
     install_requires=[
         "gspread",
         "oauth2client",
-        "xlwt"
+        "openpyxl",
+        "pysqlite"
     ],
     cmdclass={'build_py': my_build_py}
 )
