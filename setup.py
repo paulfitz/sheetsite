@@ -20,7 +20,7 @@ def read(fname, fname2):
 
 setup(
     name = "sheetsite",
-    version = "0.1.7",
+    version = "0.1.8",
     author = "Paul Fitzpatrick",
     author_email = "paul.michael.fitzpatrick@gmail.com",
     description = ("read google sheets, use them for sites"),
@@ -38,8 +38,7 @@ setup(
     install_requires=[
         "gspread",
         "oauth2client",
-        "openpyxl",
-        "pysqlite"
+        "openpyxl"
     ],
     cmdclass={'build_py': my_build_py}
 )
