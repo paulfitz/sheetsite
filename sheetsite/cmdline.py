@@ -25,6 +25,10 @@ def run():
                         help='file to write to, either output.json or output.xls(x). '
                         'When saving to json, the first row is assumed to contain column names. '
                         'When saving to xls(x), the file will not retain original formatting.')
+    parser.add_argument('private_output_file', nargs='?', default=None,
+                        help='file to write to private sheets within workbook to.')
+    parser.add_argument('--include', nargs='*', required=False, help='sheet name to include.')
+    parser.add_argument('--exclude', nargs='*', required=False, help='sheet name to exclude.')
 
     args = parser.parse_args()
 
@@ -43,4 +47,7 @@ def run():
         wb.connect(args.credential[0])
         wb.load_remote(args.spreadsheet)
     ss = Site(wb, args.geocache[0])
+    ss.add_sheet_filter(args.include, args.exclude)
     ss.save_local(args.output_file)
+    if args.private_output_file is not None:
+        ss.save_local(args.private_output_file, private_sheets=True)

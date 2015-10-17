@@ -11,17 +11,23 @@ class Site(object):
         self.workbook = spreadsheet
         self.geocache_filename = geocache_filename
         self.censor = censor
+        self.include = None
+        self.exclude = None
 
-    def save_local(self, output_file):
+    def add_sheet_filter(self, include, exclude):
+        self.include = include
+        self.exclude = exclude
+
+    def save_local(self, output_file, private_sheets=False):
         ext = '-'
         if output_file is not None:
             _, ext = os.path.splitext(output_file)
             ext = ext.lower()
 
         if ext == ".xls" or ext == ".xlsx":
-            return self.save_to_excel(output_file)
+            return self.save_to_excel(output_file, private_sheets)
         elif ext == ".json" or ext == '-':
-            return self.save_to_json(output_file)
+            return self.save_to_json(output_file, private_sheets)
 
         print("Unknown extension", ext)
         return False
@@ -30,19 +36,35 @@ class Site(object):
         rows = self.clean_cells(rows)
         rows = self.add_location(rows)
         return rows
-        
 
-    def save_to_excel(self, output_file):
+    def filter(self, sheet, private_sheets):
+        title = sheet.title
+        core_title = re.sub(r'\(\((.*)\)\)', r'\1', title)
+        if self.exclude is not None:
+            if core_title in self.exclude:
+                return None
+        if self.include is not None:
+            if core_title in self.include:
+                return core_title
+            return None
+        if (core_title == title) == private_sheets:
+            return None
+        return core_title
+
+    def save_to_excel(self, output_file, selector):
         from openpyxl import Workbook
         wb = Workbook()
         first = True
         for sheet in self.workbook.worksheets():
+            title = self.filter(sheet, selector)
+            if title is None:
+                continue
             if first:
                 ws = wb.active
                 first = False
             else:
                 ws = wb.create_sheet()
-            ws.title = sheet.title
+            ws.title = title
             rows = self.process_cells(sheet.get_all_values())
             for r, row in enumerate(rows):
                 for c, cell in enumerate(row):
@@ -50,13 +72,16 @@ class Site(object):
         wb.save(output_file)
         return True
 
-    def save_to_json(self, output_file):
+    def save_to_json(self, output_file, selector):
         result = OrderedDict()
         order = result['names'] = []
         sheets = result['tables'] = OrderedDict()
         for sheet in self.workbook.worksheets():
-            order.append(sheet.title)
-            ws = sheets[sheet.title] = OrderedDict()
+            title = self.filter(sheet, selector)
+            if title is None:
+                continue
+            order.append(title)
+            ws = sheets[title] = OrderedDict()
             vals = self.process_cells(sheet.get_all_values())
             if len(vals)>0:
                 columns = vals[0]
@@ -90,9 +115,12 @@ class Site(object):
                 if idx in hide_column:
                     continue
                 if cell is not None:
-                    cell = re.sub(r'\(\(.*\)\)','', cell)
-                    cell = re.sub(r'[\n\r]+$','', cell)
-                    cell = re.sub(r'^[\t \n\r]+$','', cell)
+                    try:
+                        cell = re.sub(r'\(\(.*\)\)','', cell)
+                        cell = re.sub(r'[\n\r]+$','', cell)
+                        cell = re.sub(r'^[\t \n\r]+$','', cell)
+                    except TypeError:
+                        pass
                 result.append(cell)
             results.append(result)
 
