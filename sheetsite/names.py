@@ -15,7 +15,8 @@ NAMES = {
     'street': 'street',
     'region': 'region',
     'state': 'region',
-    'province': 'region'
+    'province': 'region',
+    'latlng': 'latlng'
 }
 
 def normalize_name(name):

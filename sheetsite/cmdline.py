@@ -29,6 +29,7 @@ def run():
                         help='file to write to private sheets within workbook to.')
     parser.add_argument('--include', nargs='*', required=False, help='sheet name to include.')
     parser.add_argument('--exclude', nargs='*', required=False, help='sheet name to exclude.')
+    parser.add_argument('--fill', nargs='*', required=False, help='columns to fill, by name.')
 
     args = parser.parse_args()
 
@@ -48,6 +49,7 @@ def run():
         wb.load_remote(args.spreadsheet)
     ss = Site(wb, args.geocache[0])
     ss.add_sheet_filter(args.include, args.exclude)
+    ss.add_column_fills(args.fill)
     ss.save_local(args.output_file)
     if args.private_output_file is not None:
         ss.save_local(args.private_output_file, private_sheets=True)

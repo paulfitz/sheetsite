@@ -13,10 +13,17 @@ class Site(object):
         self.censor = censor
         self.include = None
         self.exclude = None
+        self.fill_columns = None
 
     def add_sheet_filter(self, include, exclude):
         self.include = include
         self.exclude = exclude
+
+    def add_column_fills(self, fill_columns):
+        if fill_columns is None:
+            self.fill_columns = None
+            return
+        self.fill_columns = [normalize_name(n) for n in fill_columns]
 
     def save_local(self, output_file, private_sheets=False):
         ext = '-'
@@ -135,13 +142,18 @@ class Site(object):
         fill_in = []
         key_id = 0
         for idx, cell in enumerate(vals[0]):
-            if normalize_name(cell) == 'address':
+            nn = normalize_name(cell)
+            if nn == 'address':
                 key_id = idx
                 have_address = True
             if cell is not None and len(cell)>0 and cell[0] == '[':
                 have_fill_in = True
                 vals[0][idx] = cell[1:-1]
                 fill_in.append([normalize_name(vals[0][idx]), idx])
+            if self.fill_columns is not None:
+                if nn in self.fill_columns:
+                    have_fill_in = True
+                    fill_in.append([nn, idx])
         if not(have_fill_in) or not(have_address):
             return vals
         from sheetsite.geocache import GeoCache

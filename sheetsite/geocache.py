@@ -22,12 +22,19 @@ class GeoCache(object):
         self.db.commit()
         self.db.close()
 
+    def complete(self, result):
+        if 'lat' in result and 'lng' in result:
+            if result['lat'] is not None and result['lng'] is not None:
+                if result['lat'] != '' and result['lng'] != '':
+                    result['latlng'] = "{},{}".format(result['lat'], result['lng'])
+        return result
+
     def find(self, address):
         results = self.cursor.execute("select address, lat, lng, street, "
                                       "locality, region, country, postal_code, "
                                       "status from geocache where address = ?", [address]).fetchall()
         for row in results:
-            return {
+            return self.complete({
                 'address': address,
                 'lat': row[1],
                 'lng': row[2],
@@ -37,7 +44,7 @@ class GeoCache(object):
                 'country': row[6],
                 'postal_code': row[7],
                 'status': row[8]
-            }
+            })
         result = self.find_without_cache(address)
         if result is None:
             result = {
@@ -54,7 +61,7 @@ class GeoCache(object):
                                 [result[key] for key in ['address','lat','lng',
                                                          'street','locality','region',
                                                          'country','postal_code','status']])
-        return result
+        return self.complete(result)
 
     def find_all(self, rows, key_id, cols):
         for row in rows:
