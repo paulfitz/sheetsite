@@ -20,7 +20,7 @@ def read(fname, fname2):
 
 setup(
     name = "sheetsite",
-    version = "0.1.8",
+    version = "0.1.9",
     author = "Paul Fitzpatrick",
     author_email = "paul.michael.fitzpatrick@gmail.com",
     description = ("read google sheets, use them for sites"),
@@ -28,7 +28,7 @@ setup(
     keywords = "google sheet xls json",
     url = "https://github.com/paulfitz/sheetsite",
     packages=['sheetsite'],
-    scripts=['bin/sheetsite'],
+    scripts=['bin/sheetsite', 'bin/sheetsend'],
     long_description=read('README', 'README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",

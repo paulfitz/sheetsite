@@ -1,0 +1,22 @@
+{
+    "names": ["tap"],
+    "sites": {
+        "tap": {
+            "source": {
+                "name": "google-sheets",
+                "key": "1mBqfuAWYkRO5M7dd-bw0jKbd0fJGI-4UUv4BDmsyJy4",
+                "credential_file": "service.json"
+            },
+            "flags": {
+                "add": {
+                    "directory": ["[LAT]", "[LNG]", "[COUNTRY]", "[STREET]", "[REGION]", "[LOCALITY]"]
+                }
+            },
+            "destination": {
+                "name": "git",
+                "repo": "git@github.com:datacommons/tap.git",
+                "file": "_data/directory.json"
+            }
+        }
+    }
+}

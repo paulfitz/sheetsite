@@ -14,6 +14,7 @@ class Site(object):
         self.include = None
         self.exclude = None
         self.fill_columns = None
+        self.add_columns = {}
 
     def add_sheet_filter(self, include, exclude):
         self.include = include
@@ -39,8 +40,8 @@ class Site(object):
         print("Unknown extension", ext)
         return False
 
-    def process_cells(self, rows):
-        rows = self.clean_cells(rows)
+    def process_cells(self, rows, name):
+        rows = self.clean_cells(rows, name)
         rows = self.add_location(rows)
         return rows
 
@@ -72,7 +73,7 @@ class Site(object):
             else:
                 ws = wb.create_sheet()
             ws.title = title
-            rows = self.process_cells(sheet.get_all_values())
+            rows = self.process_cells(sheet.get_all_values(), title)
             for r, row in enumerate(rows):
                 for c, cell in enumerate(row):
                     ws.cell(row=r+1, column=c+1).value = cell
@@ -89,7 +90,7 @@ class Site(object):
                 continue
             order.append(title)
             ws = sheets[title] = OrderedDict()
-            vals = self.process_cells(sheet.get_all_values())
+            vals = self.process_cells(sheet.get_all_values(), title)
             if len(vals)>0:
                 columns = vals[0]
                 rows = vals[1:]
@@ -105,7 +106,7 @@ class Site(object):
                 json.dump(result, f, indent=2)
         return True
 
-    def clean_cells(self, vals):
+    def clean_cells(self, vals, name):
         if len(vals) == 0:
             return vals
 
@@ -129,6 +130,12 @@ class Site(object):
                     except TypeError:
                         pass
                 result.append(cell)
+            if name in self.add_columns:
+                for col in self.add_columns[name]:
+                    if ridx == 0:
+                        result.append(col)
+                    else:
+                        result.append(None)
             results.append(result)
 
         return results
@@ -160,3 +167,10 @@ class Site(object):
         cache = GeoCache(self.geocache_filename)
         cache.find_all(vals[1:], key_id, fill_in)
         return vals
+
+    def configure(self, flags):
+        for key, val in flags.items():
+            print key, val
+            if key == 'add':
+                self.add_columns = val
+

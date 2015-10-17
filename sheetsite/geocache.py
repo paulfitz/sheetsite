@@ -8,8 +8,8 @@ class GeoCache(object):
         self.db = sqlite3.connect(filename)
         self.db.execute("create table if not exists geocache("
                         "address TEXT PRIMARY KEY,"
-                        "lat TEXT,"
-                        "lng TEXT," 
+                        "lat REAL,"
+                        "lng REAL," 
                         "street TEXT,"
                         "locality TEXT,"
                         "region TEXT," 
