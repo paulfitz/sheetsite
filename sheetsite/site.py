@@ -15,6 +15,7 @@ class Site(object):
         self.exclude = None
         self.fill_columns = None
         self.add_columns = {}
+        self.modify = True
 
     def add_sheet_filter(self, include, exclude):
         self.include = include
@@ -26,7 +27,8 @@ class Site(object):
             return
         self.fill_columns = [normalize_name(n) for n in fill_columns]
 
-    def save_local(self, output_file, private_sheets=False):
+    def save_local(self, output_file, private_sheets=False, enhance=True):
+        self.modify = enhance
         ext = '-'
         if output_file is not None:
             _, ext = os.path.splitext(output_file)
@@ -41,6 +43,8 @@ class Site(object):
         return False
 
     def process_cells(self, rows, name):
+        if not(self.modify):
+            return rows
         rows = self.clean_cells(rows, name)
         rows = self.add_location(rows)
         return rows
@@ -100,7 +104,7 @@ class Site(object):
                 ws['columns'] = []
                 ws['rows'] = []
         if output_file == None:
-            print json.dumps(result, indent=2)
+            print(json.dumps(result, indent=2))
         else:
             with open(output_file, 'w') as f:
                 json.dump(result, f, indent=2)
@@ -170,7 +174,7 @@ class Site(object):
 
     def configure(self, flags):
         for key, val in flags.items():
-            print key, val
+            print(key, val)
             if key == 'add':
                 self.add_columns = val
 

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>{{ name }}</title>
+        <style TYPE='text/css'>
+         {{ css }}
+        </style>
+    </head>
+    <body>
+
+        <p>There's been an update in the &ldquo;{{ name }}&rdquo; site.</p>
+
+        <ul>
+            {% if site_link %}
+            <li>See site at: <a href='{{ site_link }}'>{{ site_link }}</a></li>
+            {% endif %}
+            {% if sheet_link %}
+            <li>Edit at: <a href='{{ sheet_link }}'>{{ sheet_link }}</a></li>
+            {% endif %}
+            <li>Unsubscribe by removing your address from the notifications sheet.</li>
+        </ul>
+        
+        <div class='highlighter'>
+            {{ diff }}
+        </div>
+
+    </body>
+</html>

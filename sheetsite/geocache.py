@@ -76,7 +76,7 @@ class GeoCache(object):
                         row[idx] = val
 
     def find_without_cache(self, address):
-        print "Looking up", address
+        print("Looking up", address)
         return self.find_without_cache_gmap(address)
 
     def find_without_cache_dstk(self, address):
@@ -128,9 +128,9 @@ class GeoCache(object):
                 "postal_code": get_part(cmp, 'postal_code')
                 }
         except Exception as e:
-            print "PROBLEM", e
+            print("PROBLEM", e)
             return None
 
 if __name__ == '__main__':
     cache = GeoCache("cache.db")
-    print cache.find("305 Memorial Dr, Cambridge, MA")
+    print(cache.find("305 Memorial Dr, Cambridge, MA"))

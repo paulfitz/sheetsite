@@ -1,5 +1,5 @@
 {
-    "names": ["tap"],
+    "names": ["test"],
     "sites": {
         "tap": {
             "source": {
@@ -16,6 +16,18 @@
                 "name": "git",
                 "repo": "git@github.com:datacommons/tap.git",
                 "file": "_data/directory.json"
+            }
+        },
+
+        "test": {
+            "source": {
+                "name": "google-sheets",
+                "key": "15Vs_VGpupeGkljceEow7q1ig447FJIxqNS1Dd0dZpFc",
+                "credential_file": "service.json",
+                "link": "https://docs.google.com/spreadsheets/d/15Vs_VGpupeGkljceEow7q1ig447FJIxqNS1Dd0dZpFc/edit"
+            },
+            "destination": {
+                "name": null
             }
         }
     }

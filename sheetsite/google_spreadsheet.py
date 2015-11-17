@@ -12,7 +12,7 @@ class GoogleSpreadsheet(object):
         json_key = json.load(open(credential_file))
         scope = ['https://spreadsheets.google.com/feeds']
         credentials = SignedJwtAssertionCredentials(json_key['client_email'],
-                                                    json_key['private_key'], scope)
+                                                    json_key['private_key'].encode('ascii'), scope)
         self.connection = gspread.authorize(credentials)
 
     def load_remote(self, spreadsheet):
