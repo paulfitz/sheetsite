@@ -15,6 +15,7 @@ class Site(object):
         self.exclude = None
         self.fill_columns = None
         self.add_columns = {}
+        self.address_columns = {}
         self.modify = True
 
     def add_sheet_filter(self, include, exclude):
@@ -46,7 +47,7 @@ class Site(object):
         if not(self.modify):
             return rows
         rows = self.clean_cells(rows, name)
-        rows = self.add_location(rows)
+        rows = self.add_location(rows, name)
         return rows
 
     def filter(self, sheet, private_sheets):
@@ -121,6 +122,7 @@ class Site(object):
 
         results = []
 
+        existing = {}
         for ridx, row in enumerate(vals):
             result = []
             for idx, cell in enumerate(row):
@@ -134,28 +136,32 @@ class Site(object):
                     except TypeError:
                         pass
                 result.append(cell)
+                if ridx == 0:
+                    existing[cell] = 1
             if name in self.add_columns:
                 for col in self.add_columns[name]:
-                    if ridx == 0:
-                        result.append(col)
-                    else:
-                        result.append(None)
+                    if not col in existing:
+                        if ridx == 0:
+                            result.append(col)
+                        else:
+                            result.append(None)
             results.append(result)
 
         return results
 
-    def add_location(self, vals):
+    def add_location(self, vals, name):
         if len(vals) == 0:
             return vals
 
         have_address = False
         have_fill_in = False
+        pattern = [0]
         fill_in = []
-        key_id = 0
+        offset = 0
         for idx, cell in enumerate(vals[0]):
             nn = normalize_name(cell)
             if nn == 'address':
-                key_id = idx
+                pattern = [idx]
                 have_address = True
             if cell is not None and len(cell)>0 and cell[0] == '[':
                 have_fill_in = True
@@ -165,16 +171,32 @@ class Site(object):
                 if nn in self.fill_columns:
                     have_fill_in = True
                     fill_in.append([nn, idx])
+            if self.add_columns is not None:
+                if name in self.add_columns:
+                    if cell in self.add_columns[name]:
+                        offset -= 1
+                        fill_in.append([normalize_name(nn), idx])
+                        have_fill_in = True
+        if self.address_columns is not None:
+            if name in self.address_columns:
+                have_address = True
+                pattern = self.address_columns[name]
+                for idx, col in enumerate(pattern):
+                    try:
+                        pattern[idx] = vals[0].index(col)
+                    except ValueError:
+                        pass
         if not(have_fill_in) or not(have_address):
             return vals
         from sheetsite.geocache import GeoCache
         cache = GeoCache(self.geocache_filename)
-        cache.find_all(vals[1:], key_id, fill_in)
+        cache.find_all(vals[1:], pattern, fill_in)
         return vals
 
     def configure(self, flags):
         for key, val in flags.items():
-            print(key, val)
             if key == 'add':
                 self.add_columns = val
+            if key == 'address':
+                self.address_columns = val
 

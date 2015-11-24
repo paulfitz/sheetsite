@@ -25,7 +25,6 @@ pip install sheetsite
 
 ## Usage for google sheet
 
-
 1. [Obtain OAuth2 credentials from Google Developers Console](http://gspread.readthedocs.org/en/latest/oauth2.html) - thanks to gspread developers for creating this documentation!
 
 2. Find the name or url of the sheet you care about.
@@ -40,6 +39,7 @@ By default, sheetsite will strip:
 
 * Any columns whose name is in parentheses, e.g. `(Private Notes)`
 * Any cells or text within cells surrounded by double parentheses, e.g. `((private@email.address))`
+* Any sheets whose name is in double parentheses, e.g. `((secret sheet))`
 
 ## Geography
 
