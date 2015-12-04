@@ -39,7 +39,8 @@ def update_site(params, path, site, name):
 
     state = {
         'path': path,
-        'output_file': output_file
+        'output_file': output_file,
+        'workbook': ss.public_workbook()
     }
     write_destination(destination, state)
 

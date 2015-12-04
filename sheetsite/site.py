@@ -4,6 +4,7 @@ import os
 import re
 import sys
 from sheetsite.names import normalize_name
+from sheetsite.filtered_spreadsheet import FilteredSpreadsheet
 
 class Site(object):
 
@@ -35,13 +36,13 @@ class Site(object):
             _, ext = os.path.splitext(output_file)
             ext = ext.lower()
 
-        if ext == ".xls" or ext == ".xlsx":
-            return self.save_to_excel(output_file, private_sheets)
-        elif ext == ".json" or ext == '-':
-            return self.save_to_json(output_file, private_sheets)
-
-        print("Unknown extension", ext)
-        return False
+        return self.save(output_file, private_sheets)
+        #if ext == ".xls" or ext == ".xlsx":
+        #    return self.save_to_excel(output_file, private_sheets)
+        #elif ext == ".json" or ext == '-':
+        #    return self.save_to_json(output_file, private_sheets)
+        #print("Unknown extension", ext)
+        #return False
 
     def process_cells(self, rows, name):
         if not(self.modify):
@@ -64,51 +65,23 @@ class Site(object):
             return None
         return core_title
 
-    def save_to_excel(self, output_file, selector):
-        from openpyxl import Workbook
-        wb = Workbook()
-        first = True
-        for sheet in self.workbook.worksheets():
-            title = self.filter(sheet, selector)
-            if title is None:
-                continue
-            if first:
-                ws = wb.active
-                first = False
-            else:
-                ws = wb.create_sheet()
-            ws.title = title
-            rows = self.process_cells(sheet.get_all_values(), title)
-            for r, row in enumerate(rows):
-                for c, cell in enumerate(row):
-                    ws.cell(row=r+1, column=c+1).value = cell
-        wb.save(output_file)
-        return True
+    def private_workbook(self):
+        return self.filtered_workbook(True)
 
-    def save_to_json(self, output_file, selector):
-        result = OrderedDict()
-        order = result['names'] = []
-        sheets = result['tables'] = OrderedDict()
-        for sheet in self.workbook.worksheets():
-            title = self.filter(sheet, selector)
-            if title is None:
-                continue
-            order.append(title)
-            ws = sheets[title] = OrderedDict()
-            vals = self.process_cells(sheet.get_all_values(), title)
-            if len(vals)>0:
-                columns = vals[0]
-                rows = vals[1:]
-                ws['columns'] = columns
-                ws['rows'] = [OrderedDict(zip(columns, row)) for row in rows]
-            else:
-                ws['columns'] = []
-                ws['rows'] = []
-        if output_file == None:
-            print(json.dumps(result, indent=2))
-        else:
-            with open(output_file, 'w') as f:
-                json.dump(result, f, indent=2)
+    def public_workbook(self):
+        return self.filtered_workbook(False)
+
+    def filtered_workbook(self, selector_flags):
+        selector = lambda sheet: self.filter(sheet, selector_flags)
+        processor = lambda sheet, title: self.process_cells(sheet.get_all_values(), title)
+        fs = FilteredSpreadsheet(self.workbook, selector=selector, processor=processor)
+        return fs
+
+    def save(self, output_file, selector_flags):
+        from sheetsite.destination import write_destination
+        params = { 'output_file': output_file }
+        state = { 'workbook': self.filtered_workbook(selector_flags) }
+        write_destination(params, state)
         return True
 
     def clean_cells(self, vals, name):

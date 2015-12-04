@@ -1,5 +1,5 @@
 {
-    "names": ["test", "manitoba"],
+    "names": ["test", "manitoba2"],
     "sites": {
         "tap": {
             "source": {
@@ -49,6 +49,26 @@
             "destination": {
                 "name": "stone-soup",
                 "organization": "Manitoba Cooperative Association"
+            }
+        },
+
+        "manitoba2": {
+            "source": {
+                "name": "google-sheets",
+                "key": "1LvBgFeYsI9GeN2PTw5klcwBFFFeROlbwvTVF2qAIuBk",
+                "credential_file": "service.json",
+                "link": "https://docs.google.com/spreadsheets/d/1LvBgFeYsI9GeN2PTw5klcwBFFFeROlbwvTVF2qAIuBk/edit"
+            },
+            "flags": {
+                "add": {
+                    "directory": ["Latitude", "Longitude", "Postal Code", "State", "Country"]
+                },
+                "address": {
+                    "directory": ["Physical Address", "City", "Manitoba", "Canada"]
+                }
+            },
+            "destination": {
+                "output_file": "/tmp/test.xlsx"
             }
         }
     }

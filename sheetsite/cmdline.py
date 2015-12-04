@@ -4,8 +4,9 @@ import argparse
 import os
 import sys
 from sheetsite.site import Site
-from sheetsite.google_spreadsheet import GoogleSpreadsheet
-from sheetsite.json_spreadsheet import JsonSpreadsheet
+from sheetsite.source import read_source
+#from sheetsite.google_spreadsheet import GoogleSpreadsheet
+#from sheetsite.json_spreadsheet import JsonSpreadsheet
 
 def run():
     parser = argparse.ArgumentParser(description='Run a website from a spreadsheet. '
@@ -16,37 +17,36 @@ def run():
                                      'latitude and longitude.')
     parser.add_argument('--credential', nargs=1, required=False, help='credential json file '
                         'from google, see http://gspread.readthedocs.org/en/latest/oauth2.html '
-                        '(and don\'t forget to share the spreadsheet with client_email)')
+                        '(and don\'t forget to share the spreadsheet with the client_email you '
+                        'will find in the json google gives you)')
     parser.add_argument('--geocache', nargs=1, required=False, default=['sheetsite_geo.sqlite'],
-                        help='name of file to use for caching geographic lookups')
+                        help='name of file to use for caching geographic lookups.')
     parser.add_argument('spreadsheet',help='name of spreadsheet - either a local .xls(x) file, '
                         'or the name (or key) of a spreadsheet on google sheets')
     parser.add_argument('output_file', nargs='?', default=None,
-                        help='file to write to, either output.json or output.xls(x). '
+                        help='file to write public sheets to, either output.json or output.xls(x). '
                         'When saving to json, the first row is assumed to contain column names. '
                         'When saving to xls(x), the file will not retain original formatting.')
     parser.add_argument('private_output_file', nargs='?', default=None,
-                        help='file to write to private sheets within workbook to.')
+                        help='file to write private sheets to.')
     parser.add_argument('--include', nargs='*', required=False, help='sheet name to include.')
     parser.add_argument('--exclude', nargs='*', required=False, help='sheet name to exclude.')
-    parser.add_argument('--fill', nargs='*', required=False, help='columns to fill, by name.')
+    parser.add_argument('--fill', nargs='*', required=False, help='special columns to fill, by name.')
 
     args = parser.parse_args()
 
+    params = {}
+
     if os.path.exists(args.spreadsheet) and args.credential is None:
-        _, ext = os.path.splitext(args.spreadsheet)
-        if ext.lower() == '.json':
-            wb = JsonSpreadsheet(args.spreadsheet)
-        else:
-            from sheetsite.xls_spreadsheet import XlsSpreadsheet
-            wb = XlsSpreadsheet(args.spreadsheet)
+        params['filename'] = args.spreadsheet
     elif args.credential is None:
-        print "Spreadsheet not found locally, and no credentials given for looking online."
-        exit(1)
+        raise IOError("Spreadsheet not found locally, "
+                      "and no credentials given for looking online.")
     else:
-        wb = GoogleSpreadsheet()
-        wb.connect(args.credential[0])
-        wb.load_remote(args.spreadsheet)
+        params['credential_file'] = args.credential[0]
+        params['key'] = args.spreadsheet
+
+    wb = read_source(params)
     ss = Site(wb, args.geocache[0])
     ss.add_sheet_filter(args.include, args.exclude)
     ss.add_column_fills(args.fill)
