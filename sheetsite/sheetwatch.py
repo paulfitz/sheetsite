@@ -27,7 +27,7 @@ def find_sheet(msg):
     if m:
         who = m.group(1)
     if key is not None:
-        print "Found %s: %s (%s)" % (key, title, who)
+        print("Found %s: %s (%s)" % (key, title, who))
         return {
             "key": key,
             "title": title,

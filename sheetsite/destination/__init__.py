@@ -32,7 +32,9 @@ def write_destination(params, state):
         '.sqlite3': write_destination_sqlite,
         '.json': write_destination_json,
         '.xlsx': write_destination_excel,
-        '.xls': write_destination_excel
+        '.xls': write_destination_excel,
+        'drop': write_destination_drop,
+        'chain': write_destination_chain
     }
 
     name = None
@@ -49,6 +51,8 @@ def write_destination(params, state):
         params['output_file'] = params['file']
 
     if name not in writers:
-        raise IOError('destination not recognized: {}'.format(name))
+        import importlib
+        return importlib.import_module('sheetsite.destination.{}'.format(name)).apply(params,
+                                                                                      state)
 
     return writers[name](params, state)
