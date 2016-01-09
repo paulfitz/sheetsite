@@ -1,8 +1,5 @@
-import daff
-import jinja2
 import json
 import os
-import premailer
 import re
 from sheetsite.queue import app
 
@@ -12,7 +9,7 @@ def notify_one(email, subject, page):
     import yagmail
     yag = yagmail.SMTP(os.environ['GMAIL_USERNAME'],
                        os.environ['GMAIL_PASSWORD'])
-    if re.search(r'paulfitz', email):
+    if True or re.search(r'paulfitz', email):
         print("send [%s] / %s / %s" % (email, subject, page))
         print(type(email))
         yag.send(email, subject, contents = page)
@@ -24,7 +21,10 @@ def notify_one(email, subject, page):
 @app.task
 def notify_all(name, site_params, diff_html):
     print("NOTIFY_spreadsheet", site_params, name)
-    return True
+
+    import daff
+    import jinja2
+    import premailer
 
     root = os.environ['SHEETSITE_CACHE']
     path = os.path.join(root, name)
@@ -58,7 +58,7 @@ def notify_all(name, site_params, diff_html):
             email = target.get('email', None)
         if email is not None:
             notify_one.delay(email=email,
-                             subject="update to " + name,
+                             subject="update to {}".format(site_params['name']),
                              page=page)
 
     return True

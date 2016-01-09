@@ -18,7 +18,7 @@ def write_destination(params, state):
         'ftp': write_destination_ftp,
         'stone-soup': write_destination_stone_soup,
         'drop': write_destination_drop,
-        'chain': write_desination_chain
+        'chain': write_destination_chain
     }
 
     if 'name' not in params:
@@ -27,6 +27,9 @@ def write_destination(params, state):
     name = params['name']
 
     if name not in writers:
-        return IOError('destination not recognized: {}'.format(name))
+        # return IOError('destination not recognized: {}'.format(name))
+        import importlib
+        return importlib.import_module('sheetsite.destination.{}'.format(name)).apply(params,
+                                                                                      state)
 
     return writers[name](params, state)

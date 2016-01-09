@@ -1,10 +1,8 @@
-import daff
 import os
 from sheetsite.queue import app
 from sheetsite.site import Site
 from sheetsite.source import read_source
 from sheetsite.destination import write_destination
-from sheetsite.tasks.notify import notify_all
 import shutil
 
 @app.task
@@ -44,12 +42,14 @@ def update_site(params, path, site, name):
     write_destination(destination, state)
 
     # compute changes
+    import daff
     io = daff.TableIO()
     dapp = daff.Coopy(io)
     t1 = dapp.loadTable(prev_raw_file)
     t2 = dapp.loadTable(raw_file)
     diff_html = daff.diffAsHtml(t1,t2)
 
+    from sheetsite.tasks.notify import notify_all
     notify_all.delay(name=name,
                      site_params=site_params,
                      diff_html=diff_html)

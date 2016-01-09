@@ -21,7 +21,7 @@ def find_sheet(msg):
     if m:
         who = m.group(1)
     if key is not None:
-        print "Found %s: %s (%s)" % (key, title, who)
+        print("Found %s: %s (%s)" % (key, title, who))
         return {
             "key": key,
             "title": title,
@@ -42,7 +42,7 @@ def run():
         g = gmail.login(os.environ['GMAIL_USERNAME'],
                         os.environ['GMAIL_PASSWORD'])
     else:
-        print "Need GMAIL_USERNAME/GMAIL_PASSWORD to be set in environment"
+        print("Need GMAIL_USERNAME/GMAIL_PASSWORD to be set in environment")
         exit(1)
 
     parser = argparse.ArgumentParser(description='Check email for sheet change notifications.'
@@ -58,8 +58,8 @@ def run():
     keys = {}
     for msg in mail:
         msg.fetch()
-        print msg.subject
-        msg.remove_label('sheetmailed')
+        print(msg.subject)
+        # msg.remove_label('sheetmailed')
         if msg.has_label('sheetmailed'):
             continue
         sheet = find_sheet(msg)

@@ -7,3 +7,7 @@ premailer == 2.9.6
 #yagmail
 redis
 -e git://github.com/paulfitz/yagmail.git#egg=yagmail-utf8
+celery
+PyOpenSSL
+requests
+gmail_client

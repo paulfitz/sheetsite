@@ -154,8 +154,8 @@ def insert_hash(cur,tbl,values):
     columns = ', '.join([('"'+v+'"') for v in values.keys()])
     placeholders = ', '.join('?' * len(values))
     sql = 'INSERT INTO {} ({}) VALUES ({})'.format(tbl,columns,placeholders)
-    print(sql)
-    print(values.values())
+    # print(sql)
+    # print(values.values())
     cur.execute(sql, list(values.values()))
     return cur.lastrowid
 
@@ -171,6 +171,7 @@ def write_destination_stone_soup(params, state):
     output_file = state['output_file']
 
     target = os.path.join(path, 'stonesoup.sqlite3')
+    state['sqlite_file'] = target
 
     os.remove(target)
     con = lite.connect(target)
