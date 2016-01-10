@@ -6,6 +6,7 @@ Features:
 
 * Copy a private google sheet to local json (or excel).
 * Strip specially marked columns or cells from the spreadsheet.
+* (Optional) notify people with summary of updates.
 
 Handy for keeping a static website up-to-date with information
 kept in a google sheet, when not all of that information should 

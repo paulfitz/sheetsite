@@ -1,0 +1,8 @@
+{
+    "source": {
+        "filename": "tests/configs/things.json"
+    },
+    "destination": {
+        "output_file": "/tmp/out.json"
+    }
+}

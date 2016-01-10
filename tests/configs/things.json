@@ -1,0 +1,20 @@
+{
+    "names": ["countries"],
+    "tables": {
+        "countries": {
+            "columns": ["country", "code", "(opinion)"],
+            "rows": [
+                {
+                    "country": "United Kingdom",
+                    "code": "uk",
+                    "(opinion)": "dubious"
+                },
+                {
+                    "country": "United States",
+                    "code": "((usa))",
+                    "(opinion)": "dubious"
+                }
+            ]
+        }
+    }
+}
