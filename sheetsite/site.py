@@ -18,6 +18,7 @@ class Site(object):
         self.add_columns = {}
         self.address_columns = {}
         self.modify = True
+        self.geocoder = None
 
     def add_sheet_filter(self, include, exclude):
         self.include = include
@@ -37,12 +38,6 @@ class Site(object):
             ext = ext.lower()
 
         return self.save(output_file, private_sheets)
-        #if ext == ".xls" or ext == ".xlsx":
-        #    return self.save_to_excel(output_file, private_sheets)
-        #elif ext == ".json" or ext == '-':
-        #    return self.save_to_json(output_file, private_sheets)
-        #print("Unknown extension", ext)
-        #return False
 
     def process_cells(self, rows, name):
         if not(self.modify):
@@ -162,11 +157,12 @@ class Site(object):
         if not(have_fill_in) or not(have_address):
             return vals
         from sheetsite.geocache import GeoCache
-        cache = GeoCache(self.geocache_filename)
+        cache = GeoCache(self.geocache_filename, geocoder=self.geocoder)
         cache.find_all(vals[1:], pattern, fill_in)
         return vals
 
     def configure(self, flags):
+        self.geocoder = flags.get('geocoder')
         for key, val in flags.items():
             if key == 'add':
                 self.add_columns = val

@@ -1,0 +1,22 @@
+{
+    "names": ["countries"],
+    "tables": {
+        "countries": {
+            "columns": ["country", "[zip]", "code", "(opinion)"],
+            "rows": [
+                {
+                    "country": "United Kingdom",
+                    "code": "uk",
+                    "(opinion)": "dubious",
+                    "[zip]": ""
+                },
+                {
+                    "country": "United States",
+                    "code": "((usa))",
+                    "(opinion)": "dubious",
+                    "[zip]": ""
+                }
+            ]
+        }
+    }
+}

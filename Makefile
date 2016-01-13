@@ -13,3 +13,6 @@ sdist:
 	rm -rf dist
 	rm README MANIFEST
 
+test:
+       nosetests3 -s -vv tests
+

@@ -4,7 +4,7 @@ import sqlite3
 import time
 
 class GeoCache(object):
-    def __init__(self, filename):
+    def __init__(self, filename, geocoder=None):
         self.db = sqlite3.connect(filename)
         self.db.execute("create table if not exists geocache("
                         "address TEXT PRIMARY KEY,"
@@ -17,6 +17,7 @@ class GeoCache(object):
                         "postal_code TEXT,"
                         "status TEXT)")
         self.cursor = self.db.cursor()
+        self.geocoder = geocoder
 
     def __del__(self):
         self.db.commit()
@@ -88,7 +89,26 @@ class GeoCache(object):
 
     def find_without_cache(self, address):
         print("Looking up", address)
-        return self.find_without_cache_gmap(address)
+        if self.geocoder == "datasciencetoolkit":
+            return self.find_without_cache_dstk(address)
+        if self.geocoder == "google" or self.geocoder is None:
+            return self.find_without_cache_gmap(address)
+        if self.geocoder == "dummy":
+            return self.find_without_cache_dummy(address)
+        raise ValueError('unknown geocoder {}'.format(self.geocoder))
+
+    def find_without_cache_dummy(self, address):
+        return {
+            "address": address,
+            "lat": 10.0,
+            "lng": 10.0,
+            "street": "Street St",
+            "locality": "Cityville",
+            "region": "New State",
+            "country": "Countryland",
+            "postal_code": "PO-STAL",
+            "status": 'valid'
+        }
 
     def find_without_cache_dstk(self, address):
         try:
