@@ -1,14 +1,13 @@
 import json
+import os
 from tempfile import TemporaryDirectory
 from sheetsite.chain import apply_chain
 from sheetsite.cmdline import run
 
 def test_json_to_json_cmdline():
     with TemporaryDirectory() as temp_dir:
-        def tweak(param):
-            param["destination"]["output_file"] = "{}/out.json".format(temp_dir)
-        run(['--config', 'tests/configs/json_to_json.json', '--cache-dir', temp_dir],
-            tweak)
+        os.environ['TEST_DIR'] = temp_dir
+        run(['--config', 'tests/configs/json_to_json.json', '--cache-dir', temp_dir])
 
 
 def test_json_to_json():

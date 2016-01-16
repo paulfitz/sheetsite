@@ -8,7 +8,11 @@ def write_destination_ftp(params, state):
     subprocess.check_output(['ssformat',
                              'dbi:jsonbook::file={}'.format(output_file),
                              sqlite_file])
-    #subprocess.check_output(['wput', '-v', '--binary', '-u', '-nc', 'x.sqlite3', 'ftp://url'])
+    url = params['url']
+    out = subprocess.check_output(['echo', 'wput', '-v', '--binary', '-u', '-nc',
+                                   sqlite_file,
+                                   url])
+    print("ftp ready: {}".format(out))
     return True
 
 

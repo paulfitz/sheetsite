@@ -3,6 +3,6 @@
         "filename": "tests/configs/things.json"
     },
     "destination": {
-        "output_file": "/tmp/out.json"
+        "output_file": "${TEST_DIR}/out.json"
     }
 }

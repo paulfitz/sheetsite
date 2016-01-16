@@ -1,6 +1,5 @@
-import daff
 import os
-from sheetsite.chain import apply_chain
+from sheetsite.chain import apply_chain, compute_diff
 from sheetsite.queue import app
 from sheetsite.site import Site
 from sheetsite.source import read_source
@@ -21,13 +20,7 @@ def update_site(params, path, site, name):
     }
 
     files = apply_chain(site, path)
-
-    # compute changes
-    io = daff.TableIO()
-    dapp = daff.Coopy(io)
-    t1 = dapp.loadTable(files['prev_raw_file'])
-    t2 = dapp.loadTable(files['raw_file'\)
-    diff_html = daff.diffAsHtml(t1,t2)
+    diff_html = compute_diff(files)
 
     notify_all.delay(name=name,
                      site_params=site_params,

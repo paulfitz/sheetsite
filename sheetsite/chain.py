@@ -1,3 +1,4 @@
+import daff
 import os
 from sheetsite.site import Site
 from sheetsite.source import read_source
@@ -41,3 +42,12 @@ def apply_chain(site, path):
         'prev_raw_file': prev_raw_file,
         'raw_file': raw_file
     }
+
+def compute_diff(files, format='html'):
+    io = daff.TableIO()
+    dapp = daff.Coopy(io)
+    t1 = dapp.loadTable(files['prev_raw_file'])
+    t2 = dapp.loadTable(files['raw_file'])
+    if format == 'html':
+        return daff.diffAsHtml(t1, t2)
+    return daff.diffAsAnsi(t1, t2)
