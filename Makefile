@@ -14,5 +14,5 @@ sdist:
 	rm README MANIFEST
 
 test:
-       nosetests3 -s -vv tests
+	nosetests3 -s -vv tests
 
