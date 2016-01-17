@@ -18,21 +18,39 @@ be made public.
 pip install sheetsite
 ```
 
-## Usage for local spreadsheet
+## Configuration
 
-1. Run `sheetsite spreadsheet.xlsx output.json`
+Place a file named '_sheetsite.yml' in a directory.  The file should have
+two stanzas, `source` specifying where to get data from, and `destination`
+specifying where to put it.  This examples reads private google spreadsheet
+and saves it as `_data/directory.json`.
 
-2. Use `output.json` as data for static website (see http://jekyllrb.com/docs/datafiles/ for example).
+```yaml
+source:
+  name: google-sheets
+  key: 15Vs_VGpupeGkljceEow7q1ig447FJIxqNS1Dd0dZpFc
+  credential_file: service.json
 
-## Usage for google sheet
+destination:
+  output_file: _data/directory.json
+```
 
-1. [Obtain OAuth2 credentials from Google Developers Console](http://gspread.readthedocs.org/en/latest/oauth2.html) - thanks to gspread developers for creating this documentation!
+You could now build a static website from that `.json`, see http://jekyllrb.com/docs/datafiles/
+for how (this is where the name of sheetsite comes from).
 
-2. Find the name or url of the sheet you care about.
+Other formats supported as destinations are `.xlsx` and `.xls`.  You can also read
+from a local spreadsheet:
 
-3. Make sure you share the sheet with the email address in the OAuth2 credentials.  Read-only permission is fine.
+```yaml
+source:
+  filename: test.xlsx
+```
 
-4. Run `sheetsite --credential credential.json "Name of spreadsheet" output.json`
+## Getting credentials
+
+[Obtain OAuth2 credentials from Google Developers Console](http://gspread.readthedocs.org/en/latest/oauth2.html) - thanks to gspread developers for creating this documentation!
+
+Make sure you share the sheet with the email address in the OAuth2 credentials.  Read-only permission is fine.
 
 ## Privacy
 
