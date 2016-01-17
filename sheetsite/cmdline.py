@@ -26,7 +26,7 @@ def run(argv):
                                      'information and add derived geographic fields like '
                                      'latitude and longitude.')
 
-    parser.add_argument('--config', nargs='*', required=False, default=['_sheetsitex.json', '_sheetsite.yml'],
+    parser.add_argument('--config', nargs='*', required=False, default=['_sheetsite.yml', '_sheetsite.json'],
                         help='name of configuration file.')
 
     parser.add_argument('--cache-dir', nargs=1, required=False, default=['_cache'],
