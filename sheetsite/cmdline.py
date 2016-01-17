@@ -40,7 +40,7 @@ def run(argv):
             config_file = config_candidate
             break
     if not config_file:
-        print "Could not find config file", args.config
+        print("Could not find config file", args.config)
         exit(1)
     with open(config_file, 'r') as config:
         _, ext = os.path.splitext(config_file)

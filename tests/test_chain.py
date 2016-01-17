@@ -1,8 +1,33 @@
 import json
 import os
-from tempfile import TemporaryDirectory
 from sheetsite.chain import apply_chain
 from sheetsite.cmdline import run
+
+########################################################
+## python2 doesn't have TemporaryDirectory
+## replacement begins
+
+import contextlib
+import os
+import shutil
+import tempfile
+
+@contextlib.contextmanager
+def TemporaryDirectory():
+    dirpath = tempfile.mkdtemp()
+    try:
+        yield dirpath
+    finally:
+        shutil.rmtree(dirpath)
+
+## replacement ends
+## python2 doesn't have TemporaryDirectory
+########################################################
+
+
+def main():
+    with tempdir() as dirpath:
+        pass # do something here
 
 def test_json_to_json_cmdline():
     with TemporaryDirectory() as temp_dir:

@@ -28,6 +28,9 @@ def apply_chain(site, path):
     ss.save_local(raw_file, enhance=False)
     ss.save_local(output_file)
     if not os.path.exists(prev_raw_file):
+        # once daff can cope with blank tables correctly, switch to this
+        #with open(prev_raw_file, 'w') as fout:
+        #    fout.write('{ "names": [], "tables": [] }')
         shutil.copyfile(raw_file, prev_raw_file)
     ss.save_local(private_output_file, private_sheets=True)
 
