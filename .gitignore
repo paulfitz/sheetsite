@@ -1,0 +1,6 @@
+*~
+*.pyc
+env.sh
+service.json
+build
+src

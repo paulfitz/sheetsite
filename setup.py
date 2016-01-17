@@ -2,6 +2,7 @@
 
 import os
 from distutils.core import setup
+from setuptools import find_packages
 from distutils.command.build_py import build_py
 from subprocess import call
 import json
@@ -20,14 +21,14 @@ def read(fname, fname2):
 
 setup(
     name = "sheetsite",
-    version = "0.1.9",
+    version = "0.1.13",
     author = "Paul Fitzpatrick",
     author_email = "paul.michael.fitzpatrick@gmail.com",
     description = ("read google sheets, use them for sites"),
     license = "MIT",
     keywords = "google sheet xls json",
     url = "https://github.com/paulfitz/sheetsite",
-    packages=['sheetsite'],
+    packages=find_packages(),
     scripts=['bin/sheetsite', 'bin/sheetsend'],
     long_description=read('README', 'README.md'),
     classifiers=[
@@ -36,9 +37,15 @@ setup(
         "License :: OSI Approved :: MIT License"
     ],
     install_requires=[
+	"daff",
         "gspread",
+        "jinja2",
         "oauth2client",
-        "openpyxl"
+        "openpyxl",
+        "premailer",
+        "redis",
+        "requests",
+        "yagmail"
     ],
     cmdclass={'build_py': my_build_py}
 )

@@ -10,4 +10,9 @@ sdist:
 	python3 setup.py sdist
 	cd dist && mkdir tmp && cd tmp && tar xzvf ../sheet*.tar.gz && cd sheet*[0-9] && ./setup.py build
 	python3 setup.py sdist upload
-	rm -rf dist/tmp
+	rm -rf dist
+	rm README MANIFEST
+
+test:
+	nosetests3 -s -vv tests
+

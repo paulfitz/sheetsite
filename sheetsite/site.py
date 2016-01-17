@@ -4,6 +4,7 @@ import os
 import re
 import sys
 from sheetsite.names import normalize_name
+from sheetsite.filtered_spreadsheet import FilteredSpreadsheet
 
 class Site(object):
 
@@ -15,7 +16,9 @@ class Site(object):
         self.exclude = None
         self.fill_columns = None
         self.add_columns = {}
+        self.address_columns = {}
         self.modify = True
+        self.geocoder = None
 
     def add_sheet_filter(self, include, exclude):
         self.include = include
@@ -34,19 +37,13 @@ class Site(object):
             _, ext = os.path.splitext(output_file)
             ext = ext.lower()
 
-        if ext == ".xls" or ext == ".xlsx":
-            return self.save_to_excel(output_file, private_sheets)
-        elif ext == ".json" or ext == '-':
-            return self.save_to_json(output_file, private_sheets)
-
-        print("Unknown extension", ext)
-        return False
+        return self.save(output_file, private_sheets)
 
     def process_cells(self, rows, name):
         if not(self.modify):
             return rows
         rows = self.clean_cells(rows, name)
-        rows = self.add_location(rows)
+        rows = self.add_location(rows, name)
         return rows
 
     def filter(self, sheet, private_sheets):
@@ -63,51 +60,23 @@ class Site(object):
             return None
         return core_title
 
-    def save_to_excel(self, output_file, selector):
-        from openpyxl import Workbook
-        wb = Workbook()
-        first = True
-        for sheet in self.workbook.worksheets():
-            title = self.filter(sheet, selector)
-            if title is None:
-                continue
-            if first:
-                ws = wb.active
-                first = False
-            else:
-                ws = wb.create_sheet()
-            ws.title = title
-            rows = self.process_cells(sheet.get_all_values(), title)
-            for r, row in enumerate(rows):
-                for c, cell in enumerate(row):
-                    ws.cell(row=r+1, column=c+1).value = cell
-        wb.save(output_file)
-        return True
+    def private_workbook(self):
+        return self.filtered_workbook(True)
 
-    def save_to_json(self, output_file, selector):
-        result = OrderedDict()
-        order = result['names'] = []
-        sheets = result['tables'] = OrderedDict()
-        for sheet in self.workbook.worksheets():
-            title = self.filter(sheet, selector)
-            if title is None:
-                continue
-            order.append(title)
-            ws = sheets[title] = OrderedDict()
-            vals = self.process_cells(sheet.get_all_values(), title)
-            if len(vals)>0:
-                columns = vals[0]
-                rows = vals[1:]
-                ws['columns'] = columns
-                ws['rows'] = [OrderedDict(zip(columns, row)) for row in rows]
-            else:
-                ws['columns'] = []
-                ws['rows'] = []
-        if output_file == None:
-            print(json.dumps(result, indent=2))
-        else:
-            with open(output_file, 'w') as f:
-                json.dump(result, f, indent=2)
+    def public_workbook(self):
+        return self.filtered_workbook(False)
+
+    def filtered_workbook(self, selector_flags):
+        selector = lambda sheet: self.filter(sheet, selector_flags)
+        processor = lambda sheet, title: self.process_cells(sheet.get_all_values(), title)
+        fs = FilteredSpreadsheet(self.workbook, selector=selector, processor=processor)
+        return fs
+
+    def save(self, output_file, selector_flags):
+        from sheetsite.destination import write_destination
+        params = { 'output_file': output_file }
+        state = { 'workbook': self.filtered_workbook(selector_flags) }
+        write_destination(params, state)
         return True
 
     def clean_cells(self, vals, name):
@@ -121,6 +90,7 @@ class Site(object):
 
         results = []
 
+        existing = {}
         for ridx, row in enumerate(vals):
             result = []
             for idx, cell in enumerate(row):
@@ -134,28 +104,32 @@ class Site(object):
                     except TypeError:
                         pass
                 result.append(cell)
+                if ridx == 0:
+                    existing[cell] = 1
             if name in self.add_columns:
                 for col in self.add_columns[name]:
-                    if ridx == 0:
-                        result.append(col)
-                    else:
-                        result.append(None)
+                    if not col in existing:
+                        if ridx == 0:
+                            result.append(col)
+                        else:
+                            result.append(None)
             results.append(result)
 
         return results
 
-    def add_location(self, vals):
+    def add_location(self, vals, name):
         if len(vals) == 0:
             return vals
 
         have_address = False
         have_fill_in = False
+        pattern = [0]
         fill_in = []
-        key_id = 0
+        offset = 0
         for idx, cell in enumerate(vals[0]):
             nn = normalize_name(cell)
             if nn == 'address':
-                key_id = idx
+                pattern = [idx]
                 have_address = True
             if cell is not None and len(cell)>0 and cell[0] == '[':
                 have_fill_in = True
@@ -165,16 +139,33 @@ class Site(object):
                 if nn in self.fill_columns:
                     have_fill_in = True
                     fill_in.append([nn, idx])
+            if self.add_columns is not None:
+                if name in self.add_columns:
+                    if cell in self.add_columns[name]:
+                        offset -= 1
+                        fill_in.append([normalize_name(nn), idx])
+                        have_fill_in = True
+        if self.address_columns is not None:
+            if name in self.address_columns:
+                have_address = True
+                pattern = self.address_columns[name]
+                for idx, col in enumerate(pattern):
+                    try:
+                        pattern[idx] = vals[0].index(col)
+                    except ValueError:
+                        pass
         if not(have_fill_in) or not(have_address):
             return vals
         from sheetsite.geocache import GeoCache
-        cache = GeoCache(self.geocache_filename)
-        cache.find_all(vals[1:], key_id, fill_in)
+        cache = GeoCache(self.geocache_filename, geocoder=self.geocoder)
+        cache.find_all(vals[1:], pattern, fill_in)
         return vals
 
     def configure(self, flags):
+        self.geocoder = flags.get('geocoder')
         for key, val in flags.items():
-            print(key, val)
             if key == 'add':
                 self.add_columns = val
+            if key == 'address':
+                self.address_columns = val
 

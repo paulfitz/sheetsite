@@ -6,6 +6,7 @@ Features:
 
 * Copy a private google sheet to local json (or excel).
 * Strip specially marked columns or cells from the spreadsheet.
+* (Optional) notify people with summary of updates.
 
 Handy for keeping a static website up-to-date with information
 kept in a google sheet, when not all of that information should 
@@ -17,22 +18,40 @@ be made public.
 pip install sheetsite
 ```
 
-## Usage for local spreadsheet
+## Configuration
 
-1. Run `sheetsite spreadsheet.xlsx output.json`
+Place a file named `_sheetsite.yml` in a directory, in this format:
 
-2. Use `output.json` as data for static website (see http://jekyllrb.com/docs/datafiles/ for example).
+```yaml
+source:
+  name: google-sheets
+  key: 15Vs_VGpupeGkljceEow7q1ig447FJIxqNS1Dd0dZpFc
+  credential_file: service.json
 
-## Usage for google sheet
+destination:
+  output_file: _data/directory.json
+```
 
+The file should have two stanzas, `source` specifying where to get
+data from, and `destination` specifying where to put it.  This
+examples reads private google spreadsheet and saves it as
+`_data/directory.json`.  You could now build a static website from
+that `.json`, see http://jekyllrb.com/docs/datafiles/ for how (this is
+where the name of sheetsite comes from).
 
-1. [Obtain OAuth2 credentials from Google Developers Console](http://gspread.readthedocs.org/en/latest/oauth2.html) - thanks to gspread developers for creating this documentation!
+Other formats supported as destinations are `.xlsx` and `.xls`.  You can also read
+from a local spreadsheet:
 
-2. Find the name or url of the sheet you care about.
+```yaml
+source:
+  filename: test.xlsx
+```
 
-3. Make sure you share the sheet with the email address in the OAuth2 credentials.  Read-only permission is fine.
+## Getting credentials
 
-4. Run `sheetsite --credential credential.json "Name of spreadsheet" output.json`
+[Obtain OAuth2 credentials from Google Developers Console](http://gspread.readthedocs.org/en/latest/oauth2.html) - thanks to gspread developers for creating this documentation!
+
+Make sure you share the sheet with the email address in the OAuth2 credentials.  Read-only permission is fine.
 
 ## Privacy
 
@@ -40,6 +59,7 @@ By default, sheetsite will strip:
 
 * Any columns whose name is in parentheses, e.g. `(Private Notes)`
 * Any cells or text within cells surrounded by double parentheses, e.g. `((private@email.address))`
+* Any sheets whose name is in double parentheses, e.g. `((secret sheet))`
 
 ## Geography
 

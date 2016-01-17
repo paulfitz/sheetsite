@@ -1,9 +1,9 @@
-gspread == 0.2.5
+daff == 1.3.12
+gspread
 oauth2client == 1.5.1
 openpyxl == 2.2.6
-daff == 1.3.7
 jinja2 == 2.7.2
 premailer == 2.9.6
-#yagmail
 redis
+requests[security]
 -e git://github.com/paulfitz/yagmail.git#egg=yagmail-utf8

@@ -4,7 +4,7 @@ import sqlite3
 import time
 
 class GeoCache(object):
-    def __init__(self, filename):
+    def __init__(self, filename, geocoder=None):
         self.db = sqlite3.connect(filename)
         self.db.execute("create table if not exists geocache("
                         "address TEXT PRIMARY KEY,"
@@ -17,6 +17,7 @@ class GeoCache(object):
                         "postal_code TEXT,"
                         "status TEXT)")
         self.cursor = self.db.cursor()
+        self.geocoder = geocoder
 
     def __del__(self):
         self.db.commit()
@@ -46,6 +47,7 @@ class GeoCache(object):
                 'status': row[8]
             })
         result = self.find_without_cache(address)
+        print("RESULT", result)
         if result is None:
             result = {
                 'address': address,
@@ -53,6 +55,7 @@ class GeoCache(object):
             }
             self.cursor.execute("insert into geocache (address,status) values(?, ?)",
                                 [address, 'unknown'])
+            self.db.commit()
         else:
             result['status'] = 'ok'
             self.cursor.execute("insert into geocache (address,lat,lng,"
@@ -61,23 +64,51 @@ class GeoCache(object):
                                 [result[key] for key in ['address','lat','lng',
                                                          'street','locality','region',
                                                          'country','postal_code','status']])
+            self.db.commit()
         return self.complete(result)
 
-    def find_all(self, rows, key_id, cols):
+    def find_all(self, rows, pattern, cols):
         for row in rows:
-            address = row[key_id]
+            parts = []
+            for p in pattern:
+                if isinstance(p, int):
+                    parts.append(row[p])
+                else:
+                    parts.append(p)
+            address = " ".join(parts)
             result = self.find(address)
             if result['status'] == 'ok':
                 for col in cols:
                     name = col[0].lower()
                     idx = col[1]
                     val = result[name]
+                    if idx>=len(row):
+                        row.append(None)
                     if row[idx] is None or row[idx] == '':
                         row[idx] = val
 
     def find_without_cache(self, address):
         print("Looking up", address)
-        return self.find_without_cache_gmap(address)
+        if self.geocoder == "datasciencetoolkit":
+            return self.find_without_cache_dstk(address)
+        if self.geocoder == "google" or self.geocoder is None:
+            return self.find_without_cache_gmap(address)
+        if self.geocoder == "dummy":
+            return self.find_without_cache_dummy(address)
+        raise ValueError('unknown geocoder {}'.format(self.geocoder))
+
+    def find_without_cache_dummy(self, address):
+        return {
+            "address": address,
+            "lat": 10.0,
+            "lng": 10.0,
+            "street": "Street St",
+            "locality": "Cityville",
+            "region": "New State",
+            "country": "Countryland",
+            "postal_code": "PO-STAL",
+            "status": 'valid'
+        }
 
     def find_without_cache_dstk(self, address):
         try:
@@ -100,7 +131,7 @@ class GeoCache(object):
 
     def find_without_cache_gmap(self, address, fallback=None):
         try:
-            def get_part(cmp, name, fallback=None):
+            def get_part(cmps, name, fallback=None):
                 zips = [cmp["long_name"] for cmp in cmps if name in cmp["types"]]
                 zip = zips[0] if len(zips)>0 else fallback
                 return zip
@@ -112,7 +143,7 @@ class GeoCache(object):
             coord = v["results"][0]["geometry"]["location"]
             lat = coord["lat"]
             lng = coord["lng"]
-            cmps = v["results"][0]["address_components"]
+            cmp = v["results"][0]["address_components"]
             try:
                 street = get_part(cmp, 'street_number', '') + ' ' + get_part(cmp, 'route')
             except:

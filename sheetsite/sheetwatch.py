@@ -1,11 +1,10 @@
-from __future__ import absolute_import
 import argparse
 import datetime
 import gmail_client as gmail
 import json
 import os
 import re
-from sheetsite.tasks import handle_spreadsheet_update
+from sheetsite.tasks.detect_site import detect_site
 
 def find_sheet(msg):
     key = None
@@ -34,7 +33,7 @@ def find_sheet(msg):
 def store_work(job):
     if not 'key' in job:
         return
-    handle_spreadsheet_update.delay(job['key'], job)
+    detect_site.delay(job)
 
 def run():
 
@@ -52,7 +51,7 @@ def run():
     args = parser.parse_args()
 
     # look for recent emails from google notify
-    window = datetime.datetime.now() - datetime.timedelta(days=30)
+    window = datetime.datetime.now() - datetime.timedelta(days=10)
     mail = g.inbox().mail(sender='notify@google.com', after=window)
 
     # check emails for action items
@@ -75,5 +74,3 @@ def run():
 
     # leave
     g.logout()
-
-
