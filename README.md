@@ -20,10 +20,7 @@ pip install sheetsite
 
 ## Configuration
 
-Place a file named '_sheetsite.yml' in a directory.  The file should have
-two stanzas, `source` specifying where to get data from, and `destination`
-specifying where to put it.  This examples reads private google spreadsheet
-and saves it as `_data/directory.json`.
+Place a file named `_sheetsite.yml` in a directory, in this format:
 
 ```yaml
 source:
@@ -35,8 +32,12 @@ destination:
   output_file: _data/directory.json
 ```
 
-You could now build a static website from that `.json`, see http://jekyllrb.com/docs/datafiles/
-for how (this is where the name of sheetsite comes from).
+The file should have two stanzas, `source` specifying where to get
+data from, and `destination` specifying where to put it.  This
+examples reads private google spreadsheet and saves it as
+`_data/directory.json`.  You could now build a static website from
+that `.json`, see http://jekyllrb.com/docs/datafiles/ for how (this is
+where the name of sheetsite comes from).
 
 Other formats supported as destinations are `.xlsx` and `.xls`.  You can also read
 from a local spreadsheet:
