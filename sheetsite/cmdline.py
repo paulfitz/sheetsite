@@ -26,17 +26,30 @@ def run(argv):
                                      'information and add derived geographic fields like '
                                      'latitude and longitude.')
 
-    parser.add_argument('--config', nargs=1, required=False, default=['_sheetsite.json'],
-                        help='name of default configuration file.')
+    parser.add_argument('--config', nargs='*', required=False, default=['_sheetsitex.json', '_sheetsite.yml'],
+                        help='name of configuration file.')
 
     parser.add_argument('--cache-dir', nargs=1, required=False, default=['_cache'],
                         help='name of default cache directory.')
 
     args = parser.parse_args(argv)
 
-    config_file = args.config[0]
+    config_file = None
+    for config_candidate in args.config:
+        if os.path.exists(config_candidate):
+            config_file = config_candidate
+            break
+    if not config_file:
+        print "Could not find config file", args.config
+        exit(1)
     with open(config_file, 'r') as config:
-        params = json.load(config)
+        _, ext = os.path.splitext(config_file)
+        ext = ext.lower()
+        if ext == '.yml' or ext == '.yaml':
+            import yaml
+            params = yaml.safe_load(config)
+        else:
+            params = json.load(config)
         params = expand_all(params)  # should make this optional
 
     files = apply_chain(params, args.cache_dir[0])
