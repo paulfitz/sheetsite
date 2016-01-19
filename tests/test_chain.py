@@ -25,10 +25,6 @@ def TemporaryDirectory():
 ########################################################
 
 
-def main():
-    with tempdir() as dirpath:
-        pass # do something here
-
 def test_json_to_json_cmdline():
     with TemporaryDirectory() as temp_dir:
         os.environ['TEST_DIR'] = temp_dir

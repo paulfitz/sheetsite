@@ -1,5 +1,5 @@
 {
-    "names": ["countries"],
+    "names": ["countries", "((secret))"],
     "tables": {
         "countries": {
             "columns": ["country", "code", "(opinion)"],
@@ -15,6 +15,10 @@
                     "(opinion)": "dubious"
                 }
             ]
+        },
+        "((secret))": {
+            "columns": ["a", "b"],
+            "rows": {}
         }
     }
 }
