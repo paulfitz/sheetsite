@@ -8,7 +8,7 @@ from sheetsite.filtered_spreadsheet import FilteredSpreadsheet
 
 class Site(object):
 
-    def __init__(self, spreadsheet, geocache_filename, censor=True):
+    def __init__(self, spreadsheet, geocache_filename=None, censor=True):
         self.workbook = spreadsheet
         self.geocache_filename = geocache_filename
         self.censor = censor
