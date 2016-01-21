@@ -21,7 +21,7 @@ def read(fname, fname2):
 
 setup(
     name = "sheetsite",
-    version = "0.1.14",
+    version = "0.1.15",
     author = "Paul Fitzpatrick",
     author_email = "paul.michael.fitzpatrick@gmail.com",
     description = ("read google sheets, use them for sites"),
