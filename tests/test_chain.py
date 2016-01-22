@@ -60,3 +60,42 @@ def test_fill():
         with open(target, 'r') as f:
             data = json.load(f)
         assert data["tables"]["countries"]["rows"][0]["zip"] == "PO-STAL"
+
+def test_single_to_multiple_add():
+    with TemporaryDirectory() as temp_dir:
+        target = "{}/out.json".format(temp_dir)
+        params = {
+            "source": { "filename": "tests/configs/things.json" },
+            "flags": {
+                "geocoder": "dummy",
+                "address": { "countries": ["country"] },
+                "add": { "countries": ["city", "address"] }
+            },
+            "destination": { "output_file": target }
+        }
+        apply_chain(params, temp_dir)
+        with open(target, 'r') as f:
+            data = json.load(f)
+        assert data["tables"]["countries"]["rows"][0]["city"] == "Cityville"
+        assert data["tables"]["countries"]["rows"][0]["address"] == "United Kingdom"
+        assert data["tables"]["countries"]["rows"][1]["address"] == "United States"
+
+
+def test_multiple_to_multiple_add():
+    with TemporaryDirectory() as temp_dir:
+        target = "{}/out.json".format(temp_dir)
+        params = {
+            "source": { "filename": "tests/configs/things.json" },
+            "flags": {
+                "geocoder": "dummy",
+                "address": { "countries": ["code", "country", "Earth"] },
+                "add": { "countries": ["city", "address"] }
+            },
+            "destination": { "output_file": target }
+        }
+        apply_chain(params, temp_dir)
+        with open(target, 'r') as f:
+            data = json.load(f)
+        assert data["tables"]["countries"]["rows"][0]["city"] == "Cityville"
+        assert data["tables"]["countries"]["rows"][0]["address"] == "uk United Kingdom Earth"
+
