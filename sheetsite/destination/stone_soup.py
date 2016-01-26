@@ -91,50 +91,6 @@ def safe_access(props,key):
         return None
     return x
 
-def fetch_address(address,hsh):
-    print("Working on " + address)
-    if not(address in addresses):
-        try:
-            r = requests.get("http://maps.googleapis.com/maps/api/geocode/json", params = {"sensor": "false", "address": address})
-            
-            print(r.text)
-            time.sleep(1)
-            v = json.loads(r.text)
-            coord = v["results"][0]["geometry"]["location"]
-            lat = coord["lat"]
-            lng = coord["lng"]
-            cmps = v["results"][0]["address_components"]
-            zips = [cmp["long_name"] for cmp in cmps if "postal_code" in cmp["types"]]
-            zip = zips[0] if len(zips)>0 else None
-            print(str(lat) + " " + str(lng) + "  // " + zip)
-            cache = {
-                "GEO_ADDRESS": address,
-                "LAT": lat,
-                "LNG": lng,
-                "STREET": hsh['physical_address1'],
-                "LOCALITY": hsh['physical_city'],
-                "REGION": hsh['physical_state'],
-                "COUNTRY": hsh['physical_country'],
-                "ZIP": zip
-                }
-        except:
-            cache = {
-                "GEO_ADDRESS": address,
-                "LAT": "",
-                "LNG": "",
-                "STREET": "",
-                "LOCALITY": "",
-                "REGION": "",
-                "COUNTRY": "",
-                "ZIP": ""
-                }
-        ts.append([cache[k] for k in ts[0]])
-        save_geo()
-    else:
-        cache = addresses[address]
-        print("Found " + str(cache))
-    return cache
-
 def make_loc(props,rid):
     location = {
         'physical_address1': props["Physical Address"],
@@ -226,8 +182,6 @@ def write_destination_stone_soup(params, state):
         fid = None
         for row in rows:
             loc = make_loc(row,rid)
-            #address = fetch_address(addressify(row),loc)
-            #if address:
             if loc['latitude'] == None:
                 loc['latitude'] = blanky(row['Latitude'])
             if loc['longitude'] == None:
