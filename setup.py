@@ -21,7 +21,7 @@ def read(fname, fname2):
 
 setup(
     name = "sheetsite",
-    version = "0.1.15",
+    version = "0.1.16",
     author = "Paul Fitzpatrick",
     author_email = "paul.michael.fitzpatrick@gmail.com",
     description = ("read google sheets, use them for sites"),
@@ -38,14 +38,19 @@ setup(
     ],
     install_requires=[
 	"daff",
-        "gspread",
-        "jinja2",
+        "gspread_public",
         "oauth2client",
         "openpyxl",
-        "premailer",
-        "redis",
-        "requests",
-        "yagmail"
+        'pyyaml',
+        "requests"
     ],
+    extras_require={
+        "queue": [
+            "jinja2",
+            "premailer",
+            "redis",
+            "yagmail"
+        ]
+    },
     cmdclass={'build_py': my_build_py}
 )

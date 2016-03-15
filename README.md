@@ -111,6 +111,14 @@ This tells sheetsite to produce addresses of the form:
 ```
 And add a `postal_code` column populated by geocoding.
 
+It is possible to request columns directly in the spreadsheet.  Just
+wrap the column name in square brackets, like `[state]` or `[zip]`.
+Any blank cells in such columns will be filled using geocoding based
+on the address given in that row.  If the address columns have not been
+configured in `flags` then the address must be present in a single column
+literally called `address`.
+
+
 ## Other formats
 
 Other formats supported as destinations are `.xlsx` and `.xls`.  There
