@@ -5,6 +5,7 @@ import re
 import sys
 from sheetsite.names import normalize_name
 from sheetsite.filtered_spreadsheet import FilteredSpreadsheet
+from sheetsite.merged_spreadsheet import MergedSpreadsheet
 
 class Site(object):
 
@@ -17,6 +18,7 @@ class Site(object):
         self.fill_columns = None
         self.add_columns = {}
         self.address_columns = {}
+        self.merge_tables = None
         self.modify = True
         self.geocoder = None
 
@@ -66,10 +68,16 @@ class Site(object):
     def public_workbook(self):
         return self.filtered_workbook(False)
 
+    def merge(self, wb, merge_tables):
+        if merge_tables is None:
+            return wb
+        return MergedSpreadsheet(wb, merge_tables)
+
     def filtered_workbook(self, selector_flags):
+        workbook = self.merge(self.workbook, self.merge_tables)
         selector = lambda sheet: self.filter(sheet, selector_flags)
         processor = lambda sheet, title: self.process_cells(sheet.get_all_values(), title)
-        fs = FilteredSpreadsheet(self.workbook, selector=selector, processor=processor)
+        fs = FilteredSpreadsheet(workbook, selector=selector, processor=processor)
         return fs
 
     def save(self, output_file, selector_flags):
@@ -79,14 +87,26 @@ class Site(object):
         write_destination(params, state)
         return True
 
+    def sanity_stick(self, locs):
+        result = []
+        if len(locs) <= 1:
+            return locs
+        import re
+        if len(re.sub(r'[^,]', '', locs[0])) < 3:
+            return [' '.join(locs)]
+        return locs
+
     def clean_cells(self, vals, name):
         if len(vals) == 0:
             return vals
 
         hide_column = {}
+        split_column = {}
         for idx, cell in enumerate(vals[0]):
             if cell is None or len(cell)==0 or cell[0] == '(':
                 hide_column[idx] = True
+            if cell == "Other Addresses":
+                split_column[idx] = '\n'
 
         results = []
 
@@ -103,6 +123,20 @@ class Site(object):
                         cell = re.sub(r'^[\t \n\r]+$','', cell)
                     except TypeError:
                         pass
+                if ridx > 0:
+                    if idx in split_column:
+                        if cell is not None:
+                            splits = cell.split(split_column[idx])
+                            splits = self.sanity_stick(splits)
+                            cell = [['address']] + [[x] for x in splits]
+                            print(">>>", cell)
+                            cell = self.clean_cells(cell, "other")
+                            cell = self.add_location(cell, "other")
+                            cell = {
+                                'columns': cell[0],
+                                'rows': [dict(zip(cell[0], row)) for row in cell[1:]]
+                            }
+                            print("<<<", cell)
                 result.append(cell)
                 if ridx == 0:
                     existing[cell] = 1
@@ -154,6 +188,7 @@ class Site(object):
                         pattern[idx] = vals[0].index(col)
                     except ValueError:
                         pass
+        print("!!!", name, have_fill_in, have_address)
         if not(have_fill_in) or not(have_address):
             return vals
         from sheetsite.geocache import GeoCache
@@ -168,4 +203,6 @@ class Site(object):
                 self.add_columns = val
             if key == 'address':
                 self.address_columns = val
+            if key == 'merge':
+                self.merge_tables = val
 

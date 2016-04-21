@@ -8,13 +8,10 @@ class GoogleSpreadsheet(object):
         self.workbook = None
 
     def connect(self, credential_file):
-        print "BOING", credential_file
         if credential_file:
-            from oauth2client.client import SignedJwtAssertionCredentials
-            json_key = json.load(open(credential_file))
+            from oauth2client.service_account import ServiceAccountCredentials
             scope = ['https://spreadsheets.google.com/feeds']
-            credentials = SignedJwtAssertionCredentials(json_key['client_email'],
-                                                        json_key['private_key'].encode('ascii'), scope)
+            credentials = ServiceAccountCredentials.from_json_keyfile_name(credential_file, scope)
             self.connection = gspread.authorize(credentials)
         else:
             # rely on gspread_public fork
