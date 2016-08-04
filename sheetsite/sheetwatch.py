@@ -59,7 +59,7 @@ def run():
     for msg in mail:
         msg.fetch()
         print msg.subject
-        msg.remove_label('sheetmailed')
+        # msg.remove_label('sheetmailed')
         if msg.has_label('sheetmailed'):
             continue
         sheet = find_sheet(msg)
