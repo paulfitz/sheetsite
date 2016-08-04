@@ -18,6 +18,8 @@ NAMES = {
     'region': 'region',
     'state': 'region',
     'province': 'region',
+    'county': 'administrative_area_level_2',
+    'geo_county': 'administrative_area_level_2',
     'latlng': 'latlng'
 }
 

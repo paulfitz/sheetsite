@@ -39,7 +39,7 @@ setup(
     install_requires=[
 	"daff",
         "gspread_public",
-        "oauth2client",
+        "oauth2client>=2.0.0",
         "openpyxl",
         'pyyaml',
         "requests"

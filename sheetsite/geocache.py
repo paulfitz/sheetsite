@@ -1,5 +1,6 @@
 import json
 import requests
+import six
 import sqlite3
 import time
 
@@ -15,6 +16,7 @@ class GeoCache(object):
                         "region TEXT," 
                         "country TEXT,"
                         "postal_code TEXT,"
+                        "administrative_area_level_2 TEXT,"
                         "status TEXT)")
         self.cursor = self.db.cursor()
         self.geocoder = geocoder
@@ -31,8 +33,13 @@ class GeoCache(object):
         return result
 
     def find(self, address):
+        if address is None or address.lower() == 'n/a':
+            return {
+                'status': "not applicable"
+            }
         results = self.cursor.execute("select address, lat, lng, street, "
                                       "locality, region, country, postal_code, "
+                                      "administrative_area_level_2, "
                                       "status from geocache where address = ?", [address]).fetchall()
         for row in results:
             return self.complete({
@@ -44,7 +51,8 @@ class GeoCache(object):
                 'region': row[5],
                 'country': row[6],
                 'postal_code': row[7],
-                'status': row[8]
+                'administrative_area_level_2': row[8],
+                'status': row[9]
             })
         result = self.find_without_cache(address)
         print("RESULT", result)
@@ -60,10 +68,13 @@ class GeoCache(object):
             result['status'] = 'ok'
             self.cursor.execute("insert into geocache (address,lat,lng,"
                                 "street,locality,region,country,postal_code,"
-                                "status) values(?,?,?,?,?,?,?,?,?)",
+                                "administrative_area_level_2,status)"
+                                " values(?,?,?,?,?,?,?,?,?,?)",
                                 [result[key] for key in ['address','lat','lng',
                                                          'street','locality','region',
-                                                         'country','postal_code','status']])
+                                                         'country','postal_code',
+                                                         'administrative_area_level_2',
+                                                         'status']])
             self.db.commit()
         return self.complete(result)
 
@@ -75,7 +86,10 @@ class GeoCache(object):
                     parts.append(row[p])
                 else:
                     parts.append(p)
-            address = " ".join(parts)
+            if six.PY2:
+                address = " ".join(str((x or '').encode('utf-8')) for x in parts)
+            else:
+                address = " ".join(str(x or '') for x in parts)
             result = self.find(address)
             if result['status'] == 'ok':
                 for col in cols:
@@ -107,6 +121,7 @@ class GeoCache(object):
             "region": "New State",
             "country": "Countryland",
             "postal_code": "PO-STAL",
+            "administrative_area_level_2": "Glig County",
             "status": 'valid'
         }
 
@@ -124,6 +139,8 @@ class GeoCache(object):
                 "locality": v['locality'],
                 "region": v['region'],
                 "country": v['country_name'],
+                "postal_code": None,
+                "administrative_area_level_2": v['fips_county'],
                 "status": 'valid'
             }
         except:
@@ -155,6 +172,7 @@ class GeoCache(object):
                 "street": street,
                 "locality": get_part(cmp, 'locality'),
                 "region": get_part(cmp, 'administrative_area_level_1'),
+                "administrative_area_level_2": get_part(cmp, 'administrative_area_level_2'),
                 "country": get_part(cmp, 'country'),
                 "postal_code": get_part(cmp, 'postal_code')
                 }
