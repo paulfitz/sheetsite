@@ -9,11 +9,11 @@ Features:
 
 * Copy a private google sheet to local json (or excel).
 * Strip specially marked columns or cells from the spreadsheet.
-* (Optional) notify people with summary of updates.
+* (Optional) notify people by email with summary of updates.
 
 Handy for keeping a static website up-to-date with information
-kept in a google sheet, when not all of that information should 
-be made public.
+kept in a google sheet.
+
 
 ## Installation
 
@@ -42,10 +42,13 @@ examples reads a private google spreadsheet and saves it as
 The credentials file is something you [get from google](https://pygsheets.readthedocs.io/en/latest/authorizing.html).
 
 You could now build a static website from that `.json`, see
-http://jekyllrb.com/docs/datafiles/ for how.  For example,
-the map at http://datacommons.coop/tap/ is of data pulled
-from a google spreadsheet, styled using
-https://github.com/datacommons/tap via github pages.
+http://jekyllrb.com/docs/datafiles/ for how.
+
+## Other output formats
+
+Other formats supported as destinations are `.xlsx` and `.xls`.  There
+are also experimental plugins for writing to ftp, git, or particular
+database schemas.
 
 ## Strip private sheets, columns, or cells
 
@@ -119,17 +122,70 @@ configured in `flags` then the address must be present in a single column
 literally called `address`.
 
 
-## Other formats
-
-Other formats supported as destinations are `.xlsx` and `.xls`.  There
-are also experimental plugins for writing to ftp, git, or particular
-database schemas.
-
 ## Getting credentials
 
 [Obtain credentials for accessing sheets from the Google Developers Console](https://pygsheets.readthedocs.io/en/latest/authorizing.html).
 
 Make sure you share the sheet with the email address in the credentials file.  Read-only permission is fine.
+
+## Examples
+
+For example, the map at http://datacommons.coop/tap/ is a visualization
+of data pulled from a google spreadsheet, styled using
+https://github.com/datacommons/tap via github pages.
+
+## sheetwatch
+
+It can be useful to automate and forget `sheetsite`, so that updates
+to a google spreadsheet propagate automatically to their final
+destination.  The `sheetwatch` utility does this.  It requires a queue
+server to operate.  To install, do:
+
+```
+pip install sheetsite[queue]
+```
+
+Install any queue server supported by `celery`.  For example, `redis`:
+
+```
+sudo apt-get install redis-server
+redis-server
+```
+
+We need to set some environment variables to let `sheetwatch` know
+where to find the queue server:
+
+```
+export SHEETSITE_BROKER_URL=redis://localhost
+export SHEETSITE_RESULT_BACKEND=redis://localhost
+```
+
+The `sheetwatch` program needs a cache directory for its operations.
+
+```
+export SHEETSITE_CACHE=$HOME/cache/sites
+```
+
+Finally, it needs to know where there is a directory full of `yml`
+files describing any sheets to monitor and their corresponding sites:
+
+```
+export SHEETSITE_LAYOUT=$PWD/sites
+```
+
+We now start a worker:
+
+```
+celery -A sheetsite.queue worker -l info
+```
+
+The last thing we need to do is check a mailbox from time to time
+for sheet change notifications from Google, and kick off site updates
+as needed:
+
+```
+GMAIL_USERNAME=***** GMAIL_PASSWORD=***** sheetwatch
+```
 
 ## License
 

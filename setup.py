@@ -45,6 +45,8 @@ setup(
     ],
     extras_require={
         "queue": [
+            "celery",
+            "gmail_client",
             "jinja2",
             "premailer",
             "redis",

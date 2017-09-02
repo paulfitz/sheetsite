@@ -1,14 +1,31 @@
 import json
 import os
+from sheetsite.expand import load_config
 from sheetsite.queue import app
 from sheetsite.tasks.update_site import update_site
+
 
 @app.task
 def detect_site(params):
     key = params['key']
     print("PROCESS_spreadsheet", key, params)
 
-    layout = json.loads(open(os.environ['SHEETSITE_LAYOUT']).read())
+    if os.path.isdir(os.environ['SHEETSITE_LAYOUT']):
+        from glob import glob
+        files = glob(os.path.join(os.environ['SHEETSITE_LAYOUT'], '*.yml'))
+        files += glob(os.path.join(os.environ['SHEETSITE_LAYOUT'], '*.json'))
+        layout = {
+            'names': [],
+            'sites': {}
+        }
+        for fname in files:
+            name = os.path.splitext(os.path.split(fname)[1])[0]
+            layout['names'].append(name)
+            layout['sites'][name] = load_config(fname)
+    else:
+        # old big json file
+        layout = json.loads(open(os.environ['SHEETSITE_LAYOUT']).read())
+
     root = os.environ['SHEETSITE_CACHE']
 
     names = layout['names']
