@@ -11,6 +11,7 @@ import json
 import os
 import re
 import sys
+import time
 
 
 def find_sheet(msg):
@@ -91,7 +92,12 @@ def run():
 
     subparsers = parser.add_subparsers(dest='cmd')
 
-    subparsers.add_parser('ping')
+    ping = subparsers.add_parser('ping')
+
+    ping.add_argument('--delay', type=int, default=0,
+                      help="delay in seconds between pings"
+                      " (if not set, just one ping is made")
+
     subparsers.add_parser('worker')
 
     args = parser.parse_args()
@@ -100,42 +106,48 @@ def run():
         worker()
         return
 
-    # log in to gmail
-    if 'GMAIL_PASSWORD' in os.environ:
-        if os.environ['GMAIL_USERNAME'] == 'test':
-            g = TestMailbox(os.environ['GMAIL_PASSWORD'])
-        else:
-            g = gmail.login(os.environ['GMAIL_USERNAME'],
-                            os.environ['GMAIL_PASSWORD'])
-    else:
-        print("Need GMAIL_USERNAME/GMAIL_PASSWORD to be set in environment.")
-        print("They should be set to whatever account receives change notications of sheet.")
-        exit(1)
-
-    # look for recent emails from google notify
-    window = datetime.datetime.now() - datetime.timedelta(days=10)
-    mail = g.inbox().mail(sender='notify@google.com', after=window)
-
-    # check emails for action items
-    keys = {}
-    for msg in mail:
-        msg.fetch()
-        print(msg.subject)
-        # msg.remove_label('sheetmailed')
-        if msg.has_label('sheetmailed'):
-            continue
-        sheet = find_sheet(msg)
-        if sheet is not None:
-            if sheet['key'] in keys:
-                sheet = None
+    while True:
+        # log in to gmail
+        if 'GMAIL_PASSWORD' in os.environ:
+            if os.environ['GMAIL_USERNAME'] == 'test':
+                g = TestMailbox(os.environ['GMAIL_PASSWORD'])
             else:
-                keys[sheet['key']] = True
-        if sheet is not None:
-            store_work(sheet)
-        msg.add_label('sheetmailed')
+                g = gmail.login(os.environ['GMAIL_USERNAME'],
+                                os.environ['GMAIL_PASSWORD'])
+        else:
+            print("Need GMAIL_USERNAME/GMAIL_PASSWORD to be set in environment.")
+            print("They should be set to whatever account receives change notications of sheet.")
+            exit(1)
 
-    # leave
-    g.logout()
+        # look for recent emails from google notify
+        window = datetime.datetime.now() - datetime.timedelta(days=10)
+        mail = g.inbox().mail(sender='notify@google.com', after=window)
+
+        # check emails for action items
+        keys = {}
+        for msg in mail:
+            msg.fetch()
+            print(msg.subject)
+            # msg.remove_label('sheetmailed')
+            if msg.has_label('sheetmailed'):
+                continue
+            sheet = find_sheet(msg)
+            if sheet is not None:
+                if sheet['key'] in keys:
+                    sheet = None
+                else:
+                    keys[sheet['key']] = True
+            if sheet is not None:
+                store_work(sheet)
+            msg.add_label('sheetmailed')
+
+        # leave
+        g.logout()
+
+        if args.delay == 0:
+            break
+
+        time.sleep(args.delay)
 
 
 if __name__ == '__main__':

@@ -184,7 +184,7 @@ for sheet change notifications from Google, and kick off site updates
 as needed:
 
 ```
-GMAIL_USERNAME=***** GMAIL_PASSWORD=***** sheetwatch ping
+GMAIL_USERNAME=***** GMAIL_PASSWORD=***** sheetwatch ping --delay 60
 ```
 
 ## License
