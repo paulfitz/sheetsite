@@ -1,5 +1,10 @@
-import gspread
-import json
+try:
+    import pygsheets as gspread
+    simple_auth = True
+except ImportError:
+    import gspread
+    simple_auth = False
+
 
 class GoogleSpreadsheet(object):
 
@@ -8,6 +13,9 @@ class GoogleSpreadsheet(object):
         self.workbook = None
 
     def connect(self, credential_file):
+        if simple_auth:
+            self.connection = gspread.authorize(service_file=credential_file)
+            return
         if credential_file:
             from oauth2client.service_account import ServiceAccountCredentials
             scope = ['https://spreadsheets.google.com/feeds']

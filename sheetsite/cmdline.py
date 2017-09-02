@@ -55,3 +55,12 @@ def run(argv):
     files = apply_chain(params, args.cache_dir[0])
     diff = compute_diff(files, 'ansi')
     print(diff)
+
+
+def cmd_sheetsite():
+    run(sys.argv[1:])
+
+
+if __name__ == '__main__':
+    cmd_sheetsite()
+

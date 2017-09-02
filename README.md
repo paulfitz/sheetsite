@@ -39,7 +39,7 @@ The file should have two stanzas, `source` specifying where to get
 data from, and `destination` specifying where to put it.  This
 examples reads a private google spreadsheet and saves it as
 `_data/directory.json`.  The key comes from the url of the spreadsheet.
-The credentials file is something you [get from google](http://gspread.readthedocs.org/en/latest/oauth2.html).
+The credentials file is something you [get from google](https://pygsheets.readthedocs.io/en/latest/authorizing.html).
 
 You could now build a static website from that `.json`, see
 http://jekyllrb.com/docs/datafiles/ for how.  For example,

@@ -1,10 +1,10 @@
 import argparse
 import datetime
 import gmail_client as gmail
-import json
 import os
 import re
 from sheetsite.tasks.detect_site import detect_site
+
 
 def find_sheet(msg):
     key = None
@@ -31,9 +31,10 @@ def find_sheet(msg):
 
 
 def store_work(job):
-    if not 'key' in job:
+    if 'key' not in job:
         return
     detect_site.delay(job)
+
 
 def run():
 
@@ -48,7 +49,7 @@ def run():
     parser = argparse.ArgumentParser(description='Check email for sheet change notifications.'
                                      'For when webhooks are not an option.')
 
-    args = parser.parse_args()
+    parser.parse_args()
 
     # look for recent emails from google notify
     window = datetime.datetime.now() - datetime.timedelta(days=10)
