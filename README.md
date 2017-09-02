@@ -127,9 +127,9 @@ database schemas.
 
 ## Getting credentials
 
-[Obtain OAuth2 credentials from Google Developers Console](http://gspread.readthedocs.org/en/latest/oauth2.html) - thanks to gspread developers for creating this documentation!
+[Obtain credentials for accessing sheets from the Google Developers Console](https://pygsheets.readthedocs.io/en/latest/authorizing.html).
 
-Make sure you share the sheet with the email address in the OAuth2 credentials.  Read-only permission is fine.
+Make sure you share the sheet with the email address in the credentials file.  Read-only permission is fine.
 
 ## License
 
