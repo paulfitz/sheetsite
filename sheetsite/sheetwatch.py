@@ -10,6 +10,7 @@ except ImportError as e:
 import json
 import os
 import re
+import sys
 
 
 def find_sheet(msg):
@@ -74,7 +75,30 @@ class TestMailbox(object):
         pass
 
 
+def worker():
+    from celery.__main__ import main
+    while len(sys.argv) > 0:
+        sys.argv.pop()
+    for arg in ['celery', '-A', 'sheetsite.queue', 'worker', '-l', 'info']:
+        sys.argv.append(arg)
+    sys.exit(main())
+
+
 def run():
+
+    parser = argparse.ArgumentParser(description='Check email for sheet change notifications.'
+                                     'For when webhooks are not an option.')
+
+    subparsers = parser.add_subparsers(dest='cmd')
+
+    subparsers.add_parser('ping')
+    subparsers.add_parser('worker')
+
+    args = parser.parse_args()
+
+    if args.cmd == 'worker':
+        worker()
+        return
 
     # log in to gmail
     if 'GMAIL_PASSWORD' in os.environ:
@@ -87,11 +111,6 @@ def run():
         print("Need GMAIL_USERNAME/GMAIL_PASSWORD to be set in environment.")
         print("They should be set to whatever account receives change notications of sheet.")
         exit(1)
-
-    parser = argparse.ArgumentParser(description='Check email for sheet change notifications.'
-                                     'For when webhooks are not an option.')
-
-    parser.parse_args()
 
     # look for recent emails from google notify
     window = datetime.datetime.now() - datetime.timedelta(days=10)
@@ -117,3 +136,7 @@ def run():
 
     # leave
     g.logout()
+
+
+if __name__ == '__main__':
+    run()

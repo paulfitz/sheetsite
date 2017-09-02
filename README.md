@@ -176,7 +176,7 @@ export SHEETSITE_LAYOUT=$PWD/sites
 We now start a worker:
 
 ```
-celery -A sheetsite.queue worker -l info
+sheetwatch worker
 ```
 
 The last thing we need to do is check a mailbox from time to time
@@ -184,7 +184,7 @@ for sheet change notifications from Google, and kick off site updates
 as needed:
 
 ```
-GMAIL_USERNAME=***** GMAIL_PASSWORD=***** sheetwatch
+GMAIL_USERNAME=***** GMAIL_PASSWORD=***** sheetwatch ping
 ```
 
 ## License
