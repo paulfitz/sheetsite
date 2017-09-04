@@ -8,7 +8,7 @@ def write_destination_git(destination, state):
     try:
         path = state['path']
         output_file = state['output_file']
-        local_repo = os.path.join(path, 'repo')
+        local_repo = os.path.join(path, destination.get('local', 'repo'))
         if not(os.path.exists(local_repo)):
             subprocess.check_output(['git', 'clone', destination['repo'], local_repo])
         os.chdir(local_repo)

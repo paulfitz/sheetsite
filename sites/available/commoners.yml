@@ -15,7 +15,14 @@ flags:
       - LOCALITY
 
 destination:
-  name: git
-  repo: git@github.com:datacommons/commoners
-  file: _data/directory.json
+  name: chain
+  chain:
+    - name: git
+      repo: git@github.com:datacommons/commoners
+      local: commoners
+      file: _data/directory.json
+    - name: git
+      repo: git@github.com:datacommons/datacommons.github.io
+      file: _data/directory.json
+      local: website
   link: http://datacommons.coop/commoners
