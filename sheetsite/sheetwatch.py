@@ -197,6 +197,9 @@ def run():
     ping.add_argument('--clear', action='store_true',
                       help="do not take action on initial emails, just absorb them")
 
+    ping.add_argument('--no-notify', action='store_true',
+                      help="do not send notification emails")
+
     ping.add_argument('--delay', type=int, default=0,
                       help="delay in seconds between pings"
                       " (if not set, just one ping is made")
@@ -243,6 +246,7 @@ def run():
                     keys[sheet['key']] = True
             if sheet is not None:
                 if not ignore:
+                    sheet['no_notify'] = args.no_notify
                     store_work(sheet)
                 else:
                     print("  * ignoring this email as directed")

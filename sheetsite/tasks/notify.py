@@ -59,8 +59,11 @@ def notify_all(name, site_params, diff_html):
         if email is None:
             email = target.get('email', None)
         if email is not None:
-            notify_one.delay(email=email,
-                             subject="update to {}".format(site_params['name']),
-                             page=page)
+            if site_params['no_notify']:
+                print("skip email to {}".format(email))
+            else:
+                notify_one.delay(email=email,
+                                 subject="update to {}".format(site_params['name']),
+                                 page=page)
 
     return True

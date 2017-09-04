@@ -129,7 +129,8 @@ def write_destination_stone_soup(params, state):
     target = os.path.join(path, 'stonesoup.sqlite3')
     state['sqlite_file'] = target
 
-    os.remove(target)
+    if os.path.exists(target):
+        os.remove(target)
     con = lite.connect(target)
     cur = con.cursor()
 
