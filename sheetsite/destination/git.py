@@ -1,5 +1,7 @@
 import os
+import shutil
 import subprocess
+
 
 def write_destination_git(destination, state):
     wd = os.getcwd()

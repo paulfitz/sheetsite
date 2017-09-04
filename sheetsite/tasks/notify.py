@@ -3,6 +3,7 @@ import os
 import re
 from sheetsite.queue import app
 
+
 @app.task
 def notify_one(email, subject, page):
     print("tell %s about %s" % (email, subject))
@@ -17,6 +18,7 @@ def notify_one(email, subject, page):
     else:
         print("skip %s" % email)
     return True
+
 
 @app.task
 def notify_all(name, site_params, diff_html):
