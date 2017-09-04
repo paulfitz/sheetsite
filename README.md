@@ -3,27 +3,57 @@
 [![Build Status](https://travis-ci.org/paulfitz/sheetsite.svg?branch=master)](https://travis-ci.org/paulfitz/sheetsite)
 [![PyPI version](https://badge.fury.io/py/sheetsite.svg)](http://badge.fury.io/py/sheetsite)
 
-Manage your website or directory with a google sheet.
+Keep a website or directory in sync with a google sheet.
 
 Features:
 
-* Copy a private google sheet to local json (or excel).
-* Strip specially marked columns or cells from the spreadsheet.
-* (Optional) notify people by email with summary of updates.
-
-Handy for keeping a static website up-to-date with information
-kept in a google sheet.
+* Copy a google spreadsheet locally, as json or excel format.
+* Can strip specified tabs, columns, or cells from the spreadsheet,
+  in case not all of it should be copied along.
+* Can push a filtered json copy out to a git repository, handy for
+  maintaining a website based on a private shared spreadsheet.
+* Can augment the sheet with geocoding, adding latitude and longitude based
+  on address fields for example.
+* Can notify people by email with a summary of updates.
 
 
 ## Installation
+
+For the basics:
 
 ```
 pip install sheetsite
 ```
 
-## Google sheet to local json
+For all bells and whistles, when automating a sheet-to-site workflow:
 
-Place a file named `_sheetsite.yml` in a directory, in this format:
+```
+pip install sheetsite[queue]
+```
+
+## Specifying the source and destination
+
+The `sheetsite` utility, when run without any arguments, will expect
+to find all necessary options in a `_sheetsite.yml` file.  A simple
+example of such a file is:
+
+```yaml
+source:
+  name: google-sheets
+  key: 15Vs_VGpupeGkljceEow7q1ig447FJIxqNS1Dd0dZpFc
+  credential_file: service.json
+
+destination:
+  file: sheet.xlsx
+```
+
+The file should have two stanzas, `source` specifying where to get
+data from, and `destination` specifying where to put it.  This
+examples reads a private google spreadsheet and saves it as
+`sheet.xlsx`.  The key comes from the url of the spreadsheet.
+The credentials file is something you [get from google](https://pygsheets.readthedocs.io/en/latest/authorizing.html).
+
+Here's an example that outputs json:
 
 ```yaml
 source:
@@ -35,20 +65,34 @@ destination:
   file: _data/directory.json
 ```
 
-The file should have two stanzas, `source` specifying where to get
-data from, and `destination` specifying where to put it.  This
-examples reads a private google spreadsheet and saves it as
-`_data/directory.json`.  The key comes from the url of the spreadsheet.
-The credentials file is something you [get from google](https://pygsheets.readthedocs.io/en/latest/authorizing.html).
-
 You could now build a static website from that `.json`, see
-http://jekyllrb.com/docs/datafiles/ for how.
+http://jekyllrb.com/docs/datafiles/ for how, or see an example
+at https://github.com/datacommons/commoners
 
-## Other output formats
+Here's an example that adds some geocoded fields and directly
+updates a git repository:
 
-Other formats supported as destinations are `.xlsx` and `.xls`.  There
-are also experimental plugins for writing to ftp, git, or particular
-database schemas.
+```yaml
+source:
+  name: google-sheets
+  key: 19UaXhqPQ0QHEfSWS_adDEtPwYstq8llK2YijpvFZcKA
+  credential_file: service.json
+
+flags:
+  add:
+    directory:
+      - LAT
+      - LNG
+      - COUNTRY
+      - STREET
+      - REGION
+      - LOCALITY
+
+destination:
+  name: git
+  repo: git@github.com:datacommons/commoners
+  file: _data/directory.json
+```
 
 ## Strip private sheets, columns, or cells
 
@@ -170,7 +214,7 @@ Finally, it needs to know where there is a directory full of `yml`
 files describing any sheets to monitor and their corresponding sites:
 
 ```
-export SHEETSITE_LAYOUT=$PWD/sites
+export SHEETSITE_LAYOUT=$PWD/sites/enabled
 ```
 
 We now start a worker:
