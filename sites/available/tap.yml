@@ -1,0 +1,21 @@
+source:
+  name: google-sheets
+  key: 1mBqfuAWYkRO5M7dd-bw0jKbd0fJGI-4UUv4BDmsyJy4
+  credential_file: service.json
+  link: https://docs.google.com/spreadsheets/d/1mBqfuAWYkRO5M7dd-bw0jKbd0fJGI-4UUv4BDmsyJy4/edit
+
+flags:
+  add:
+    directory:
+      - LAT
+      - LNG
+      - COUNTRY
+      - STREET
+      - REGION
+      - LOCALITY
+
+destination:
+  name: git
+  repo: git@github.com:datacommons/tap
+  file: _data/directory.json
+  link: http://datacommons.coop/tap

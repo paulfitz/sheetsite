@@ -2,6 +2,7 @@ source:
   name: google-sheets
   key: 19UaXhqPQ0QHEfSWS_adDEtPwYstq8llK2YijpvFZcKA
   credential_file: service.json
+  link: https://docs.google.com/spreadsheets/d/19UaXhqPQ0QHEfSWS_adDEtPwYstq8llK2YijpvFZcKA/edit
 
 flags:
   add:
@@ -17,3 +18,4 @@ destination:
   name: git
   repo: git@github.com:datacommons/commoners
   file: _data/directory.json
+  link: http://datacommons.coop/commoners

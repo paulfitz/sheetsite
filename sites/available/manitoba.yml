@@ -25,5 +25,4 @@ destination:
     - name: stone-soup
       organization: Manitoba Cooperative Association
     - name: install_local_soup
-
-link: http://find.manitoba.coop
+  link: http://find.manitoba.coop
