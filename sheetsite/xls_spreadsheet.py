@@ -1,5 +1,6 @@
 from openpyxl import load_workbook
 
+
 class XlsSpreadsheet(object):
 
     def __init__(self, filename):
@@ -8,6 +9,7 @@ class XlsSpreadsheet(object):
 
     def worksheets(self):
         return self.sheets
+
 
 class XlsSheet(object):
 

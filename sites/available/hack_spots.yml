@@ -1,0 +1,7 @@
+source:
+  name: google-sheets
+  key: 1hnfQcggYcBYimuO_UOMvwoOi_I9vUvFpkMt4wjrrpLE
+  credential_file: service.json
+
+destination:
+  file: hackspots.xlsx
