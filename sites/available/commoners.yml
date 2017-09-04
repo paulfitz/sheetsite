@@ -1,0 +1,19 @@
+source:
+  name: google-sheets
+  key: 19UaXhqPQ0QHEfSWS_adDEtPwYstq8llK2YijpvFZcKA
+  credential_file: service.json
+
+flags:
+  add:
+    directory:
+      - LAT
+      - LNG
+      - COUNTRY
+      - STREET
+      - REGION
+      - LOCALITY
+
+destination:
+  name: git
+  repo: git@github.com:datacommons/commoners
+  file: _data/directory.json

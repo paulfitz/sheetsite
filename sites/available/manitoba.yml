@@ -1,0 +1,29 @@
+source:
+  name: google-sheets
+  key: 1LvBgFeYsI9GeN2PTw5klcwBFFFeROlbwvTVF2qAIuBk
+  credential_file: service.json
+  link: https://docs.google.com/spreadsheets/d/1LvBgFeYsI9GeN2PTw5klcwBFFFeROlbwvTVF2qAIuBk/edit
+
+flags:
+  add:
+    directory:
+      - Latitude
+      - Longitude
+      - Postal Code
+      - State
+      - Country
+  address:
+    directory:
+      - Physical Address
+      - City
+      - Manitoba
+      - Canada
+
+destination:
+  name: chain
+  chain:
+    - name: stone-soup
+      organization: Manitoba Cooperative Association
+    - name: install_local_soup
+
+link: http://find.manitoba.coop

@@ -1,0 +1,19 @@
+source:
+  name: google-sheets
+  key: 15Vs_VGpupeGkljceEow7q1ig447FJIxqNS1Dd0dZpFc
+  credential_file: service.json
+
+flags:
+  add:
+    directory:
+      - LAT
+      - LNG
+      - COUNTRY
+      - STREET
+      - REGION
+      - LOCALITY
+
+destination:
+  name: git
+  repo: git@github.com:paulfitz/scrapyard
+  file: directory.json
