@@ -46,10 +46,11 @@ setup(
     extras_require={
         "queue": [
             "celery",
-            "gmail_client",
+            "dataset",
             "jinja2",
             "premailer",
             "redis",
+            "six",
             "yagmail"
         ]
     }
