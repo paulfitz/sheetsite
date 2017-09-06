@@ -1,11 +1,9 @@
-from collections import OrderedDict
-import json
 import os
 import re
-import sys
 from sheetsite.names import normalize_name
 from sheetsite.filtered_spreadsheet import FilteredSpreadsheet
 from sheetsite.merged_spreadsheet import MergedSpreadsheet
+
 
 class Site(object):
 
@@ -188,7 +186,6 @@ class Site(object):
                         pattern[idx] = vals[0].index(col)
                     except ValueError:
                         pass
-        print("!!!", name, have_fill_in, have_address)
         if not(have_fill_in) or not(have_address):
             return vals
         from sheetsite.geocache import GeoCache

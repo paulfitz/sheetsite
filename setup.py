@@ -37,6 +37,7 @@ setup(
     ],
     install_requires=[
         "daff",
+        "dataset",
         "oauth2client>=2.0.0",
         "openpyxl",
         "pygsheets",
@@ -46,7 +47,6 @@ setup(
     extras_require={
         "queue": [
             "celery",
-            "dataset",
             "jinja2",
             "premailer",
             "redis",

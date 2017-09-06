@@ -1,35 +1,55 @@
+import dataset
 import json
+import logging
+import os
 import requests
 import six
-import sqlite3
+from sqlalchemy import types
 import time
+import warnings
+
 
 class GeoCache(object):
     def __init__(self, filename, geocoder=None):
-        self.db = sqlite3.connect(filename)
-        self.db.execute("create table if not exists geocache("
-                        "address TEXT PRIMARY KEY,"
-                        "lat REAL,"
-                        "lng REAL," 
-                        "street TEXT,"
-                        "locality TEXT,"
-                        "region TEXT," 
-                        "country TEXT,"
-                        "postal_code TEXT,"
-                        "administrative_area_level_2 TEXT,"
-                        "status TEXT)")
-        self.cursor = self.db.cursor()
+        logging.basicConfig()
+        logging.getLogger("dataset.persistence.table").setLevel(
+            logging.ERROR
+        )
+        if '://' not in filename:
+            filename = "sqlite:///{}".format(os.path.abspath(filename))
+        self.db = dataset.connect(filename)
+        self.geocache = self.db['geocache']
+        self.update_schema()
         self.geocoder = geocoder
 
-    def __del__(self):
-        self.db.commit()
-        self.db.close()
+    def update_schema(self):
+        if 'geocache' not in self.db:
+            self.db.create_table('geocache',
+                                 primary_id='address',
+                                 primary_type='String')
+        columns = [
+            ('lat', types.Float),
+            ('lng', types.Float),
+            ('street', types.String),
+            ('locality', types.String),
+            ('region', types.String),
+            ('country', types.String),
+            ('postal_code', types.String),
+            ('administrative_area_level_2', types.String),
+            ('status', types.String)
+        ]
+        self.geocache = self.db['geocache']
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            for name, kind in columns:
+                self.geocache.create_column(name, kind)
 
     def complete(self, result):
         if 'lat' in result and 'lng' in result:
             if result['lat'] is not None and result['lng'] is not None:
                 if result['lat'] != '' and result['lng'] != '':
-                    result['latlng'] = "{},{}".format(result['lat'], result['lng'])
+                    result['latlng'] = "{},{}".format(result['lat'],
+                                                      result['lng'])
         return result
 
     def find(self, address):
@@ -37,44 +57,20 @@ class GeoCache(object):
             return {
                 'status': "not applicable"
             }
-        results = self.cursor.execute("select address, lat, lng, street, "
-                                      "locality, region, country, postal_code, "
-                                      "administrative_area_level_2, "
-                                      "status from geocache where address = ?", [address]).fetchall()
+        results = self.geocache.find(address=address)
         for row in results:
-            return self.complete({
-                'address': address,
-                'lat': row[1],
-                'lng': row[2],
-                'street': row[3],
-                'locality': row[4],
-                'region': row[5],
-                'country': row[6],
-                'postal_code': row[7],
-                'administrative_area_level_2': row[8],
-                'status': row[9]
-            })
+            return self.complete(dict(row))
         result = self.find_without_cache(address)
-        print("RESULT", result)
+        print("--- geocoded [{}]".format(result))
         if result is None:
             result = {
                 'address': address,
                 'status': 'unknown'
             }
-            self.cursor.execute("insert into geocache (address,status) values(?, ?)",
-                                [address, 'unknown'])
-            self.db.commit()
+            self.geocache.insert(result)
         else:
             result['status'] = 'ok'
-            self.cursor.execute("insert into geocache (address,lat,lng,"
-                                "street,locality,region,country,postal_code,"
-                                "administrative_area_level_2,status)"
-                                " values(?,?,?,?,?,?,?,?,?,?)",
-                                [result[key] for key in ['address','lat','lng',
-                                                         'street','locality','region',
-                                                         'country','postal_code',
-                                                         'administrative_area_level_2',
-                                                         'status']])
+            self.geocache.insert(result)
             self.db.commit()
         return self.complete(result)
 
@@ -102,7 +98,7 @@ class GeoCache(object):
                         row[idx] = val
 
     def find_without_cache(self, address):
-        print("Looking up", address)
+        print("--- geocoding [{}]".format(address))
         if self.geocoder == "datasciencetoolkit":
             return self.find_without_cache_dstk(address)
         if self.geocoder == "google" or self.geocoder is None:
@@ -179,6 +175,7 @@ class GeoCache(object):
         except Exception as e:
             print("PROBLEM", e)
             return None
+
 
 if __name__ == '__main__':
     cache = GeoCache("cache.db")

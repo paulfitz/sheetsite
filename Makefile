@@ -14,5 +14,5 @@ sdist:
 	rm README MANIFEST
 
 test:
-	nosetests3 -s -vv tests
-
+	which nosetests3 && nosetests3 -s -vv tests || echo "no nosetest3"
+	which nosetests && nosetests -s -vv tests || echo "no nosetest"
