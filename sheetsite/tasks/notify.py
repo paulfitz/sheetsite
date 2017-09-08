@@ -80,7 +80,8 @@ def notify_all(name, site_params, diff_html, diff_text):
                 print("skip email to {}".format(email))
             else:
                 notify_one.delay(email=email,
-                                 subject="update to {}".format(site_params['name']),
+                                 subject="update to {}".format(site_params.get('name',
+                                                                               'directory')),
                                  page=page,
                                  text=page_text)
 

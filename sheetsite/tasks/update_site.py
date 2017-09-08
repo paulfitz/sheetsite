@@ -9,7 +9,8 @@ def update_site(params, path, site, name):
     destination = site['destination']
 
     site_params = {
-        'name': params.get('title', 'unknown'),
+        'name': params.get('title', None),
+        'who': params.get('who', None),
         'sheet_link': source.get('link', None),
         'site_link': destination.get('link', None),
         'no_notify': params['no_notify']

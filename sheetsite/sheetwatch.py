@@ -153,7 +153,7 @@ class ImapMailbox(object):
         return self
     
     def set_processed(self, uid):
-        self.record.insert({ 'uid': uid })
+        self.record.insert({'uid': uid})
         
     def mail(self, **_):
         import datetime
@@ -175,6 +175,7 @@ class ImapMailbox(object):
 
     def logout(self):
         self.mailer.logout()
+
 
 def worker():
     from celery.__main__ import main

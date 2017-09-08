@@ -12,6 +12,9 @@
         <p>There's been an update in the &ldquo;{{ name }}&rdquo; site.</p>
 
         <ul>
+            {% if who %}
+            <li>Edit made by: {{ who }}</li>
+            {% endif %}
             {% if site_link %}
             <li>See site at: <a href='{{ site_link }}'>{{ site_link }}</a></li>
             {% endif %}

@@ -1,0 +1,12 @@
+There's been an update in the "{{ name }}" site.
+
+{% if who %}
+ * Edit made by: {{ who }}
+{% endif %}{% if site_link %}
+ * See site at: {{ site_link }}
+{% endif %}{% if sheet_link %}
+ * Edit at: {{ sheet_link }}
+{% endif %}
+ * Unsubscribe by removing your address from the notifications sheet.
+
+{{ diff }}
