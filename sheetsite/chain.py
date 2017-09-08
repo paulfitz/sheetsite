@@ -46,11 +46,16 @@ def apply_chain(site, path):
         'raw_file': raw_file
     }
 
+
 def compute_diff(files, format='html'):
     io = daff.TableIO()
     dapp = daff.Coopy(io)
     t1 = dapp.loadTable(files['prev_raw_file'])
     t2 = dapp.loadTable(files['raw_file'])
+    if format == 'both':
+        r1 = daff.diffAsHtml(t1, t2)
+        r2 = daff.diffAsAnsi(t1, t2)
+        return (r1, r2)
     if format == 'html':
         return daff.diffAsHtml(t1, t2)
     return daff.diffAsAnsi(t1, t2)

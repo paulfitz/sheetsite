@@ -1,27 +1,41 @@
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import json
 import os
-import re
 from sheetsite.queue import app
+import smtplib
 
 
 @app.task
-def notify_one(email, subject, page):
-    print("tell %s about %s" % (email, subject))
-    import yagmail
-    yag = yagmail.SMTP(os.environ['GMAIL_USERNAME'],
-                       os.environ['GMAIL_PASSWORD'])
-    if True or re.search(r'paulfitz', email):
-        print("send [%s] / %s / %s" % (email, subject, page))
-        print(type(email))
-        yag.send(email, subject, contents = page)
-        # print "not actually emailing"
-    else:
-        print("skip %s" % email)
+def notify_one(email, subject, page, text):
+
+    print("send [%s] / %s / %s" % (email, subject, page))
+
+    server_ssl = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+    server_ssl.ehlo()  # optional, called by login()
+    me = os.environ['GMAIL_USERNAME']
+    server_ssl.login(me, os.environ['GMAIL_PASSWORD'])
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = me
+    msg['To'] = email
+
+    # Record the MIME types of both parts - text/plain and text/html.
+    part1 = MIMEText(text, 'plain')
+    part2 = MIMEText(page, 'html')
+
+    msg.attach(part1)
+    msg.attach(part2)
+
+    server_ssl.sendmail(me, email, msg.as_string())
+    server_ssl.close()
+
     return True
 
 
 @app.task
-def notify_all(name, site_params, diff_html):
+def notify_all(name, site_params, diff_html, diff_text):
     print("NOTIFY_spreadsheet", site_params, name)
 
     import daff
@@ -53,6 +67,9 @@ def notify_all(name, site_params, diff_html):
     template = env.get_template('update.html')
     page = template.render(site_params)
     page = premailer.transform(page)
+    site_params['diff'] = diff_text
+    template = env.get_template('update.txt')
+    page_text = template.render(site_params)
 
     for target in notifications['rows']:
         email = target.get('EMAIL', None)
@@ -64,6 +81,7 @@ def notify_all(name, site_params, diff_html):
             else:
                 notify_one.delay(email=email,
                                  subject="update to {}".format(site_params['name']),
-                                 page=page)
+                                 page=page,
+                                 text=page_text)
 
     return True

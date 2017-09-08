@@ -16,12 +16,13 @@ def update_site(params, path, site, name):
     }
 
     files = apply_chain(site, path)
-    diff_html = compute_diff(files)
+    diff_html, diff_text = compute_diff(files, format='both')
 
     from sheetsite.tasks.notify import notify_all
     notify_all.delay(name=name,
                      site_params=site_params,
-                     diff_html=diff_html)
+                     diff_html=diff_html,
+                     diff_text=diff_text)
     return True
 
 

@@ -50,8 +50,7 @@ setup(
             "jinja2",
             "premailer",
             "redis",
-            "six",
-            "yagmail"
+            "six"
         ]
     }
 )
