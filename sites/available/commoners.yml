@@ -25,4 +25,4 @@ destination:
       repo: git@github.com:datacommons/datacommons.github.io
       file: _data/directory.json
       local: website
-  link: http://datacommons.coop/commoners
+  link: http://datacommons.coop/members
