@@ -37,7 +37,7 @@ setup(
     ],
     install_requires=[
         "daff",
-        "dataset",
+        "dataset==0.8.0",
         "oauth2client>=2.0.0",
         "openpyxl",
         "pygsheets",
