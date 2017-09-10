@@ -165,6 +165,43 @@ on the address given in that row.  If the address columns have not been
 configured in `flags` then the address must be present in a single column
 literally called `address`.
 
+## Grouping locations
+
+If there are several rows of a sheet that will give locations that should
+be thought of as a single unit (e.g. an organization with multiple locations),
+you can tell `sheetsite` about that.  To do so, give it a `group` key.
+Every row for which the `group` is the same (and not blank) will be bound
+together.  When geocaching, blank cells in address cells  will be filled
+in with information from the first row in this group.  For example, with this
+configuration:
+
+```
+flags:
+  group: WEBSITE
+```
+
+Then for a table like the following:
+
+```
+STREET,   CITY,   STATE,    WEBSITE
+...
+17 N St,  Foo,    Utopia,   joe.ut
+16 S St,  ,       ,         joe.ut
+...
+
+During geocoding, `16 S St` would be assumed to be in `Foo, Utopia`.
+
+## Renaming columns
+
+Columns can be renamed.  This will occur before any other operation.
+
+```
+flags:
+  rename:
+    table_name:
+      old_column_name1: new_column_name1
+      old_column_name2: new_column_name2
+```
 
 ## Getting credentials
 

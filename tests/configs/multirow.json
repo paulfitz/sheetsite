@@ -1,0 +1,38 @@
+{
+    "names": ["places"],
+    "tables": {
+        "places": {
+            "columns": ["street", "city", "state", "country", "web"],
+            "rows": [
+                {
+                    "street": "Test1",
+                    "city": "Test2",
+                    "state": "",
+                    "country": "",
+                    "web": ""
+                },
+                {
+                    "street": "Test1",
+                    "city": "",
+                    "state": "",
+                    "country": "",
+                    "web": ""
+                },
+                {
+                    "street": "305 Memorial Dr",
+                    "city": "Cambridge",
+                    "state": "Massachusetts",
+                    "country": "United States",
+                    "web": "web1"
+                },
+                {
+                    "street": "306 Memorial Dr",
+                    "city": null,
+                    "state": "",
+                    "country": "",
+                    "web": "web1"
+                }
+            ]
+        }
+    }
+}

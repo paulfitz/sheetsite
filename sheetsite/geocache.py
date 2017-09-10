@@ -10,7 +10,7 @@ import warnings
 
 
 class GeoCache(object):
-    def __init__(self, filename, geocoder=None):
+    def __init__(self, filename, geocoder=None, group_key=None):
         logging.basicConfig()
         logging.getLogger("dataset.persistence.table").setLevel(
             logging.ERROR
@@ -21,6 +21,8 @@ class GeoCache(object):
         self.geocache = self.db['geocache']
         self.update_schema()
         self.geocoder = geocoder
+        self.group_key = group_key
+        self.prev_row = None
 
     def update_schema(self):
         if 'geocache' not in self.db:
@@ -74,14 +76,24 @@ class GeoCache(object):
             self.db.commit()
         return self.complete(result)
 
+    def blank(self, val):
+        return val is None or val == ""
+
     def find_all(self, rows, pattern, cols):
         for row in rows:
             parts = []
             for p in pattern:
                 if isinstance(p, int):
-                    parts.append(row[p])
+                    if ((self.blank(row[p]) and self.prev_row and
+                         self.prev_row[self.group_key] == row[self.group_key] and
+                         not self.blank(self.group_key) and
+                         not self.blank(row[self.group_key]))):
+                        parts.append(self.prev_row[p])
+                    else:
+                        parts.append(row[p])
                 else:
                     parts.append(p)
+            parts = [part for part in parts if not self.blank(part)]
             if six.PY2:
                 address = " ".join(str((x or '').encode('utf-8')) for x in parts)
             else:
@@ -92,10 +104,16 @@ class GeoCache(object):
                     name = col[0].lower()
                     idx = col[1]
                     val = result[name]
-                    if idx>=len(row):
+                    if idx >= len(row):
                         row.append(None)
                     if row[idx] is None or row[idx] == '':
                         row[idx] = val
+            if self.group_key:
+                if self.prev_row:
+                    if self.prev_row[self.group_key] != row[self.group_key]:
+                        self.prev_row = row
+                else:
+                    self.prev_row = row
 
     def find_without_cache(self, address):
         print("--- geocoding [{}]".format(address))

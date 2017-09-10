@@ -15,10 +15,12 @@ class Site(object):
         self.exclude = None
         self.fill_columns = None
         self.add_columns = {}
+        self.rename_columns = {}
         self.address_columns = {}
         self.merge_tables = None
         self.modify = True
         self.geocoder = None
+        self.group_key = None
 
     def add_sheet_filter(self, include, exclude):
         self.include = include
@@ -101,7 +103,7 @@ class Site(object):
         hide_column = {}
         split_column = {}
         for idx, cell in enumerate(vals[0]):
-            if cell is None or len(cell)==0 or cell[0] == '(':
+            if cell is None or len(cell) == 0 or cell[0] == '(':
                 hide_column[idx] = True
             if cell == "Other Addresses":
                 split_column[idx] = '\n'
@@ -157,13 +159,21 @@ class Site(object):
         have_fill_in = False
         pattern = [0]
         fill_in = []
+        group_index = None
         offset = 0
         for idx, cell in enumerate(vals[0]):
+            if name in self.rename_columns:
+                renames = self.rename_columns[name]
+                if cell in renames:
+                    cell = renames[cell]
+                    vals[0][idx] = cell
+            if cell == self.group_key and self.group_key is not None:
+                group_index = idx
             nn = normalize_name(cell)
             if nn == 'address':
                 pattern = [idx]
                 have_address = True
-            if cell is not None and len(cell)>0 and cell[0] == '[':
+            if cell is not None and len(cell) > 0 and cell[0] == '[':
                 have_fill_in = True
                 vals[0][idx] = cell[1:-1]
                 fill_in.append([normalize_name(vals[0][idx]), idx])
@@ -189,17 +199,23 @@ class Site(object):
         if not(have_fill_in) or not(have_address):
             return vals
         from sheetsite.geocache import GeoCache
-        cache = GeoCache(self.geocache_filename, geocoder=self.geocoder)
+        cache = GeoCache(self.geocache_filename, geocoder=self.geocoder,
+                         group_key=group_index)
         cache.find_all(vals[1:], pattern, fill_in)
         return vals
 
     def configure(self, flags):
         self.geocoder = flags.get('geocoder')
         for key, val in flags.items():
+            if key == 'rename':
+                self.rename_columns = val
             if key == 'add':
                 self.add_columns = val
             if key == 'address':
                 self.address_columns = val
             if key == 'merge':
                 self.merge_tables = val
+            if key == 'group':
+                self.group_key = val
+
 

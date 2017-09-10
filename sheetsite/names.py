@@ -3,6 +3,7 @@ NAMES = {
     'lat': 'lat',
     'latitude': 'lat',
     'lng': 'lng',
+    'lon': 'lng',
     'longitude': 'lng',
     'address': 'address',
     'zip': 'postal_code',
@@ -22,6 +23,7 @@ NAMES = {
     'geo_county': 'administrative_area_level_2',
     'latlng': 'latlng'
 }
+
 
 def normalize_name(name):
     name = name.lower()
