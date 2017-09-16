@@ -137,11 +137,11 @@ def write_destination_stone_soup(params, state):
     global schema
     cur.executescript(schema)
 
-    ot = insert_hash(cur,"tag_contexts",{
+    ot = insert_hash(cur, "tag_contexts", {
             'name': 'OrgType',
             'friendly_name': 'Organization Type'
             })
-    ot = insert_hash(cur,"tags",{
+    ot = insert_hash(cur, "tags", {
             'name': 'OrgType',
             'root_id': ot,
             'root_type': "TagContext"
@@ -151,8 +151,6 @@ def write_destination_stone_soup(params, state):
 
     cur.execute('INSERT OR REPLACE INTO data_sharing_orgs (id,name) VALUES (1,?);',
                 [params['organization']])
-
-    addresses = {}
 
     org_names = []
     orgs = {}
@@ -168,22 +166,19 @@ def write_destination_stone_soup(params, state):
         orgs[name].append(row)
 
     organizations = []
-    locations = []
 
     print("ORG COUNT " + str(len(org_names)))
 
     for idx, name in enumerate(org_names):
-        #if idx>60:
-        #    break
         rows = orgs[name]
         common = get_common_props(rows)
         main = get_main_props(rows)
         print(name + " : " + str(common) + " " + str(len(rows)))
         organization = make_org(common)
-        rid = insert_hash(cur,"organizations",organization)
+        rid = insert_hash(cur, "organizations", organization)
         fid = None
         for row in rows:
-            loc = make_loc(row,rid)
+            loc = make_loc(row, rid)
             if loc['latitude'] == None:
                 loc['latitude'] = blanky(row['Latitude'])
             if loc['longitude'] == None:

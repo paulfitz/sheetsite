@@ -28,23 +28,7 @@ class GeoCache(object):
         if 'geocache' not in self.db:
             self.db.create_table('geocache',
                                  primary_id='address',
-                                 primary_type='String')
-        columns = [
-            ('lat', types.Float),
-            ('lng', types.Float),
-            ('street', types.String),
-            ('locality', types.String),
-            ('region', types.String),
-            ('country', types.String),
-            ('postal_code', types.String),
-            ('administrative_area_level_2', types.String),
-            ('status', types.String)
-        ]
-        self.geocache = self.db['geocache']
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            for name, kind in columns:
-                self.geocache.create_column(name, kind)
+                                 primary_type=self.db.types.string)
 
     def complete(self, result):
         if 'lat' in result and 'lng' in result:
