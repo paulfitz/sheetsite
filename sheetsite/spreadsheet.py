@@ -2,9 +2,9 @@ from collections import OrderedDict
 import gspread
 import json
 import os
-import sys
 from oauth2client.client import SignedJwtAssertionCredentials
 import re
+
 
 class Spreadsheet(object):
 
@@ -13,7 +13,6 @@ class Spreadsheet(object):
         self.workbook = None
         self.censor = censor
 
-
     def connect(self, credential_file):
         json_key = json.load(open(credential_file))
         scope = ['https://spreadsheets.google.com/feeds']
@@ -21,10 +20,8 @@ class Spreadsheet(object):
                                                     json_key['private_key'], scope)
         self.connection = gspread.authorize(credentials)
 
-
     def load_remote(self, spreadsheet_key):
         self.workbook = self.connection.open_by_key(spreadsheet_key)
-
 
     def save_local(self, output_file):
         _, ext = os.path.splitext(output_file)
@@ -37,7 +34,6 @@ class Spreadsheet(object):
         print("Unknown extension", ext)
         return False
 
-
     def save_to_excel(self, output_file):
         import xlwt
         wb = xlwt.Workbook()
@@ -49,7 +45,6 @@ class Spreadsheet(object):
                     ws.write(r, c, cell)
         wb.save(output_file)
         return True
-
 
     def save_to_json(self, output_file):
         result = OrderedDict()
@@ -67,12 +62,11 @@ class Spreadsheet(object):
             json.dump(result, f, indent=2)
         return True
 
-
     def clean_cells(self, vals):
         hide_column = {}
 
         for idx, cell in enumerate(vals[0]):
-            if len(cell)==0 or cell[0] == '(':
+            if len(cell) == 0 or cell[0] == '(':
                 hide_column[idx] = True
 
         results = []
@@ -82,9 +76,9 @@ class Spreadsheet(object):
             for idx, cell in enumerate(row):
                 if idx in hide_column:
                     continue
-                cell = re.sub(r'\(\(.*\)\)','', cell)
-                cell = re.sub(r'[\n\r]+$','', cell)
-                cell = re.sub(r'^[\t \n\r]+$','', cell)
+                cell = re.sub(r'\(\(.*\)\)', '', cell)
+                cell = re.sub(r'[\n\r]+$', '', cell)
+                cell = re.sub(r'^[\t \n\r]+$', '', cell)
                 result.append(cell)
             results.append(result)
 
