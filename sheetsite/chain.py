@@ -1,9 +1,11 @@
 import daff
 import os
+from sheetsite.ids import process_ids
 from sheetsite.site import Site
 from sheetsite.source import read_source
 from sheetsite.destination import write_destination
 import shutil
+
 
 def apply_chain(site, path):
 
@@ -22,16 +24,22 @@ def apply_chain(site, path):
     output_file = os.path.join(path, 'public.json')
     prev_raw_file = os.path.join(path, 'prev_raw.json')
     private_output_file = os.path.join(path, 'private.json')
+    id_file = os.path.join(path, 'ids.json')
+    prev_id_file = os.path.join(path, 'prev_ids.json')
     if os.path.exists(raw_file):
         shutil.copyfile(raw_file, prev_raw_file)
+        shutil.copyfile(id_file, prev_id_file)
 
     ss.save_local(raw_file, enhance=False)
+    ss.add_ids(process_ids(prev_raw_file, raw_file, prev_id_file, id_file))
+
     ss.save_local(output_file)
     if not os.path.exists(prev_raw_file):
         # once daff can cope with blank tables correctly, switch to this
-        #with open(prev_raw_file, 'w') as fout:
+        # with open(prev_raw_file, 'w') as fout:
         #    fout.write('{ "names": [], "tables": [] }')
         shutil.copyfile(raw_file, prev_raw_file)
+        shutil.copyfile(id_file, prev_id_file)
     ss.save_local(private_output_file, private_sheets=True)
 
     state = {

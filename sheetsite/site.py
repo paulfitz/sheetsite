@@ -21,6 +21,7 @@ class Site(object):
         self.modify = True
         self.geocoder = None
         self.group_key = None
+        self.ids = None
 
     def add_sheet_filter(self, include, exclude):
         self.include = include
@@ -40,6 +41,9 @@ class Site(object):
             ext = ext.lower()
 
         return self.save(output_file, private_sheets)
+
+    def add_ids(self, ids):
+        self.ids = ids
 
     def process_cells(self, rows, name):
         if not(self.modify):
@@ -196,6 +200,16 @@ class Site(object):
                         pattern[idx] = vals[0].index(col)
                     except ValueError:
                         pass
+        if have_fill_in:
+            for cname, cidx in fill_in:
+                if cname == 'dccid' and self.ids is not None:
+                    if name in self.ids:
+                        ref = self.ids[name]
+                        for idx, row in enumerate(vals):
+                            if idx == 0:
+                                continue
+                            key = ref.get(idx)
+                            row[cidx] = key
         if not(have_fill_in) or not(have_address):
             return vals
         from sheetsite.geocache import GeoCache

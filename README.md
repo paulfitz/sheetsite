@@ -165,6 +165,22 @@ on the address given in that row.  If the address columns have not been
 configured in `flags` then the address must be present in a single column
 literally called `address`.
 
+## Row uuids
+
+There's a random feature to add uuids to rows.   Just add a column
+called `dccid` for some reason:
+
+```
+flags:
+  add:
+    table_name_goes_here:
+      - dccid
+```
+
+A uuid will be added to each row.  A good faith effort will be made
+to keep that uuid constant across updates, keeping it linked to the
+row where it first appeared.
+
 ## Grouping locations
 
 If there are several rows of a sheet that will give locations that should

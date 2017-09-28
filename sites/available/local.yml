@@ -1,0 +1,15 @@
+source:
+  name: .json
+  filename: test.json
+
+flags:
+  add:
+    zig:
+      - dccid
+    zag:
+      - dccid
+
+destination:
+  name: .json
+  output_file: foo.json
+  

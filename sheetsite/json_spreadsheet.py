@@ -1,11 +1,13 @@
 from collections import OrderedDict
 import json
 
+
 class JsonSpreadsheet(object):
 
     def __init__(self, filename):
         self.data = json.load(open(filename))
-        self.sheets = [JsonSheet(n, self.data['tables'][n]) for n in self.data['names']]
+        self.sheets = [JsonSheet(n, self.data['tables'][n])
+                       for n in self.data['names']]
 
     def worksheets(self):
         return self.sheets
@@ -20,7 +22,7 @@ class JsonSpreadsheet(object):
             order.append(title)
             ws = sheets[title] = OrderedDict()
             vals = sheet.get_all_values()
-            if len(vals)>0:
+            if len(vals) > 0:
                 columns = vals[0]
                 rows = vals[1:]
                 ws['columns'] = columns
