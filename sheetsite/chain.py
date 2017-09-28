@@ -28,7 +28,8 @@ def apply_chain(site, path):
     prev_id_file = os.path.join(path, 'prev_ids.json')
     if os.path.exists(raw_file):
         shutil.copyfile(raw_file, prev_raw_file)
-        shutil.copyfile(id_file, prev_id_file)
+        if os.path.exists(id_file):
+            shutil.copyfile(id_file, prev_id_file)
 
     ss.save_local(raw_file, enhance=False)
     ss.add_ids(process_ids(prev_raw_file, raw_file, prev_id_file, id_file))
