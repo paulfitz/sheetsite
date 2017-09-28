@@ -201,8 +201,10 @@ class Site(object):
                     except ValueError:
                         pass
         if have_fill_in:
-            for cname, cidx in fill_in:
+            dccid = None
+            for at, (cname, cidx) in enumerate(fill_in):
                 if cname == 'dccid' and self.ids is not None:
+                    dccid = at
                     if name in self.ids:
                         ref = self.ids[name]
                         for idx, row in enumerate(vals):
@@ -210,6 +212,10 @@ class Site(object):
                                 continue
                             key = ref.get(idx)
                             row[cidx] = key
+            if dccid is not None:
+                del fill_in[dccid]
+                if len(fill_in) == 0:
+                    have_fill_in = False
         if not(have_fill_in) or not(have_address):
             return vals
         from sheetsite.geocache import GeoCache
