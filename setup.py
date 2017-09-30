@@ -42,7 +42,8 @@ setup(
         "openpyxl",
         "pygsheets",
         "pyyaml",
-        "requests"
+        "requests",
+        "tqdm"
     ],
     extras_require={
         "queue": [

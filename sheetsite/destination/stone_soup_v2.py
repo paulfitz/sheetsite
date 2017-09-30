@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
+from contextlib import contextmanager
 import dataset
 from datetime import datetime
 import json
 import os
 import re
+from tqdm import tqdm
 import uuid
 
 
@@ -66,7 +68,7 @@ def make_org(props):
         'name': anykey(props, "NAME", "CompanyName"),
         'phone': anykey(props, "PHONE", "WorkPhone"),
         'email': fix_email(anykey(props, "EMAIL", "Email Address")),
-        'website': anykey(props, "WEBSITE", "Web Address"),
+        'website': anykey(props, "WEBSITE", "Web Address", None),
         'description': anykey(props, "GOODS AND SERVICES", "Description", None),
         'access_rule_id': 1
         }
@@ -128,6 +130,11 @@ class DirectToDB(object):
     def find_one(self, tbl, **conds):
         return self.cur[tbl].find_one(**conds)
 
+    @contextmanager
+    def transaction(self):
+        with self.cur as x:
+            yield DirectToDB(x)
+
 
 def blanky(x):
     if x == "" or x is None:
@@ -135,14 +142,24 @@ def blanky(x):
     return x
 
 
+def floaty(x):
+    if x is None or x == "":
+        return None
+    return float(x)
+
+
 def apply(params, state):
 
-    path = state['path']
+    path = merge_path = state['path']
     output_file = state['output_file']
 
-    target = os.path.abspath(os.path.join(path,
+    if 'merge_path' in params:
+        merge_path = params['merge_path']
+    target = os.path.abspath(os.path.join(merge_path,
                                           'stonesoup.sqlite3'))
-    state['sqlite_file'] = target
+    target_perm = os.path.abspath(os.path.join(path,
+                                               'stonesoup.sqlite3'))
+    state['sqlite_file'] = target_perm
 
     cur = DirectToDB(dataset.connect("sqlite:///" + target))
     ot = cur.upsert("tag_contexts", {
@@ -211,7 +228,7 @@ def apply(params, state):
         prep(tab)
 
     # collect all locations for each org
-    for idx, row in enumerate(lol):
+    for idx, row in tqdm(list(enumerate(lol))):
         name = anykey(row, 'NAME', 'CompanyName')
         if not(name in orgs):
             orgs[name] = []
@@ -220,7 +237,7 @@ def apply(params, state):
 
     print("ORG COUNT " + str(len(org_names)))
 
-    for idx, name in enumerate(org_names):
+    for idx, name in tqdm(list(enumerate(org_names))):
         rows = orgs[name]
         common = get_common_props(rows)
         main = get_main_props(rows)
@@ -237,40 +254,43 @@ def apply(params, state):
                 break
         if oid is None:
             oid = str(uuid.uuid4())
-        for id in ids:
-            cur.upsert('oids', {'oid': oid, 'dccid': id}, ['dccid'])
+        with cur.transaction() as cur1:
+            for id in ids:
+                cur1.upsert('oids', {'oid': oid, 'dccid': id}, ['dccid'])
         organization['oid'] = oid
         organization['dso'] = dso
         organization['dso_update'] = 'fresh'
         rid = cur.upsert("organizations", organization, ['oid'])
         fid = None
-        for row in rows:
-            loc = make_loc(row, rid)
-            if loc['latitude'] is None:
-                loc['latitude'] = blanky(row['Latitude'])
-            if loc['longitude'] is None:
-                loc['longitude'] = blanky(row['Longitude'])
-            if loc['physical_zip'] is None:
-                loc['physical_zip'] = blanky(row['Postal Code'])
-            if loc['dccid'] is None:
-                loc['dccid'] = blanky(row['dccid'])
-            loc['dso'] = dso
-            loc['dso_update'] = 'fresh'
-            fid0 = cur.upsert("locations", loc, ['dccid'])
-            if fid is None:
-                fid = fid0
-        cur.update('organizations',
-                   {'id': rid, 'primary_location_id': fid},
-                   ['id'])
-        cur.upsert("data_sharing_orgs_taggables", {
-            "data_sharing_org_id": dso_id,
-            "taggable_id": rid,
-            "taggable_type": "Organization",
-            "verified": 1,
-            "foreign_key_id": 999,
-            "dso": dso,
-            "dso_update": "fresh"
-        }, ['data_sharing_org_id', 'taggable_id', 'taggable_type'])
+        with cur.transaction() as cur1:
+            for row in rows:
+                loc = make_loc(row, rid)
+                if loc['latitude'] is None or loc['latitude'] == "":
+                    loc['latitude'] = floaty(blanky(row['Latitude']))
+                if loc['longitude'] is None or loc['longitude'] == "":
+                    loc['longitude'] = floaty(blanky(row['Longitude']))
+                if loc['physical_zip'] is None:
+                    loc['physical_zip'] = blanky(row['Postal Code'])
+                if loc['dccid'] is None:
+                    loc['dccid'] = blanky(row['dccid'])
+                loc['dso'] = dso
+                loc['dso_update'] = 'fresh'
+                fid0 = cur1.upsert("locations", loc, ['dccid'])
+                if fid is None:
+                    fid = fid0
+        with cur.transaction() as cur1:
+            cur1.update('organizations',
+                        {'id': rid, 'primary_location_id': fid},
+                        ['id'])
+            cur1.upsert("data_sharing_orgs_taggables", {
+                "data_sharing_org_id": dso_id,
+                "taggable_id": rid,
+                "taggable_type": "Organization",
+                "verified": 1,
+                "foreign_key_id": 999,
+                "dso": dso,
+                "dso_update": "fresh"
+            }, ['data_sharing_org_id', 'taggable_id', 'taggable_type'])
         typ = main["TYPE"]
         if typ:
             v = list(cur.find('org_types', name=typ))
@@ -313,3 +333,6 @@ def apply(params, state):
                         })
     for tab in tabs:
         cur.delete(tab, dso=dso, dso_update='old')
+
+    from shutil import copyfile
+    copyfile(target, target_perm)

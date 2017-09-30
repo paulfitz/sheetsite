@@ -1,5 +1,5 @@
 from sheetsite.chain import apply_chain, compute_diff
-from sheetsite.queue import app
+from sheetsite.site_queue import app
 
 
 @app.task

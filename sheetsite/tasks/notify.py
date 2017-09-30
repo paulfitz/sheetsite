@@ -2,7 +2,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
 import os
-from sheetsite.queue import app
+from sheetsite.site_queue import app
 import smtplib
 
 

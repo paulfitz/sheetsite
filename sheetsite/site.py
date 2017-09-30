@@ -15,8 +15,10 @@ class Site(object):
         self.exclude = None
         self.fill_columns = None
         self.add_columns = {}
+        self.const_columns = {}
         self.rename_columns = {}
         self.address_columns = {}
+        self.constant_columns = {}
         self.merge_tables = None
         self.modify = True
         self.geocoder = None
@@ -146,11 +148,18 @@ class Site(object):
                     existing[cell] = 1
             if name in self.add_columns:
                 for col in self.add_columns[name]:
-                    if not col in existing:
+                    if col not in existing:
                         if ridx == 0:
                             result.append(col)
                         else:
                             result.append(None)
+            if name in self.constant_columns:
+                for col, val in self.constant_columns[name].items():
+                    if col not in existing:
+                        if ridx == 0:
+                            result.append(col)
+                        else:
+                            result.append(val)
             results.append(result)
 
         return results
@@ -231,6 +240,8 @@ class Site(object):
                 self.rename_columns = val
             if key == 'add':
                 self.add_columns = val
+            if key == 'constant':
+                self.constant_columns = val
             if key == 'address':
                 self.address_columns = val
             if key == 'merge':

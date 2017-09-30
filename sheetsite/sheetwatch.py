@@ -181,7 +181,7 @@ def worker():
     from celery.__main__ import main
     while len(sys.argv) > 0:
         sys.argv.pop()
-    for arg in ['celery', '-A', 'sheetsite.queue', 'worker', '-l', 'info']:
+    for arg in ['celery', '-A', 'sheetsite.site_queue', 'worker', '-l', 'info']:
         sys.argv.append(arg)
     sys.exit(main())
 

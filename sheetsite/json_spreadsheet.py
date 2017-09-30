@@ -4,8 +4,11 @@ import json
 
 class JsonSpreadsheet(object):
 
-    def __init__(self, filename):
-        self.data = json.load(open(filename))
+    def __init__(self, filename, data=None):
+        if data is not None:
+            self.data = data
+        else:
+            self.data = json.load(open(filename))
         self.sheets = [JsonSheet(n, self.data['tables'][n])
                        for n in self.data['names']]
 

@@ -14,6 +14,7 @@ def apply_chain(site, path):
 
     source = site['source']
     destination = site['destination']
+    tweaks = site.get('tweaks')
 
     wb = read_source(source)
 
@@ -33,6 +34,18 @@ def apply_chain(site, path):
 
     ss.save_local(raw_file, enhance=False)
     ss.add_ids(process_ids(prev_raw_file, raw_file, prev_id_file, id_file))
+
+    if tweaks:
+        import json
+        wj = json.load(open(raw_file, 'r'))
+        for tweak, params in tweaks.items():
+            print("Working on tweak", json.dumps(tweak))
+            import importlib
+            importlib.import_module('sheetsite.tweaks.'
+                                    '{}'.format(tweak)).apply(wj,
+                                                              params)
+        from sheetsite.json_spreadsheet import JsonSpreadsheet
+        ss.workbook = JsonSpreadsheet(None, data=wj)
 
     ss.save_local(output_file)
     if not os.path.exists(prev_raw_file):

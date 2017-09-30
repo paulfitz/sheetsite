@@ -4,9 +4,7 @@ import logging
 import os
 import requests
 import six
-from sqlalchemy import types
 import time
-import warnings
 
 
 class GeoCache(object):
@@ -151,10 +149,15 @@ class GeoCache(object):
                 zip = zips[0] if len(zips)>0 else fallback
                 return zip
 
-            r = requests.get("http://maps.googleapis.com/maps/api/geocode/json",
-                             params = {"sensor": "false", "address": address})
-            time.sleep(1)
-            v = json.loads(r.text)
+            v = None
+            for delay in [1, 2, 4, 8]:
+                r = requests.get("http://maps.googleapis.com/maps/api/geocode/json",
+                                 params={"sensor": "false", "address": address})
+                time.sleep(delay)
+                v = json.loads(r.text)
+                if 'status' in v:
+                    if v['status'] != 'OVER_QUERY_LIMIT':
+                        break
             coord = v["results"][0]["geometry"]["location"]
             lat = coord["lat"]
             lng = coord["lng"]

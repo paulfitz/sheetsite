@@ -1,7 +1,7 @@
 import json
 import os
 from sheetsite.expand import load_config
-from sheetsite.queue import app
+from sheetsite.site_queue import app
 from sheetsite.tasks.update_site import update_site
 
 
