@@ -291,8 +291,16 @@ def apply(params, state):
                 "dso": dso,
                 "dso_update": "fresh"
             }, ['data_sharing_org_id', 'taggable_id', 'taggable_type'])
-        typ = main["TYPE"]
-        if typ:
+        typs = main["TYPE"]
+        if typs is None:
+            typs = ""
+        typs = typs.split(',')
+        if "dcc_status" in main:
+            typ0 = main['dcc_status']
+            if typ0:
+                typs.append(typ0)
+        typs = [typ.strip() for typ in typs if typ.strip() != ""]
+        for typ in typs:
             v = list(cur.find('org_types', name=typ))
             tid = None
             if len(v) == 0:
