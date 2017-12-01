@@ -122,7 +122,8 @@ class DirectToDB(object):
         result = self.cur[tbl].upsert(values, keys)
         if result is not True:
             return result
-        return self.cur[tbl].find_one(**values)['id']
+        vs = dict((k, values[k]) for k in keys)
+        return self.cur[tbl].find_one(**vs)['id']
 
     def find(self, tbl, **conds):
         return self.cur[tbl].find(**conds)
@@ -148,6 +149,137 @@ def floaty(x):
     return float(x)
 
 
+class TargetDB(object):
+
+    def __init__(self, target_db):
+        cur = DirectToDB(target_db)
+        self.ot = cur.upsert("tag_contexts", {
+            'name': 'OrgType',
+            'friendly_name': 'Organization Type'
+        }, ['name'])
+        cur.upsert("tag_contexts", {
+            'name': 'MemberOrg',
+            'friendly_name': 'Member Organization Affiliation'
+        }, ['name'])
+        cur.upsert("tag_contexts", {
+            'name': 'Sector',
+            'friendly_name': 'Business Sector'
+        }, ['name'])
+        cur.upsert("tag_contexts", {
+            'name': 'LegalStructure',
+            'friendly_name': 'Legal Structure'
+        }, ['name'])
+        cur.upsert("tags", {
+            'name': 'dcc',
+            'root_id': 1,
+            'root_type': "TagWorld"
+        }, ['name'])
+        for name in ['OrgType', 'Sector', 'MemberOrg', 'LegalStructure']:
+            cur.upsert("tags", {
+                'name': 'OrgType',
+                'root_id': cur.find_one('tag_contexts', name=name)['id'],
+                'root_type': "TagContext"
+            }, ['name'])
+        cur.upsert("tag_worlds", {
+            'name': 'dcc',
+        }, ['name'])
+
+        cur.column('users', 'login', 'x')
+        cur.column('users', 'password', 'x')
+        cur.column('users', 'is_admin', 1)
+        cur.column('users', 'person_id', 1)
+        cur.column('users', 'last_login', datetime.now())
+        cur.column('organizations', 'grouping', 'x')
+        cur.column('locations', 'mailing_address1', 'x')
+        cur.column('locations', 'mailing_address2', 'x')
+        cur.column('locations', 'mailing_city', 'x')
+        cur.column('locations', 'mailing_state', 'x')
+        cur.column('locations', 'mailing_zip', 'x')
+        cur.column('locations', 'mailing_country', 'x')
+        cur.column('locations', 'mailing_county', 'x')
+        cur.column('locations', 'physical_county', 'x')
+        for tab in ['organizations', 'locations']:
+            cur.column(tab, 'dccid', 'x')
+            cur.column(tab, 'created_at', datetime.now())
+            cur.column(tab, 'updated_at', datetime.now())
+        cur.column('people', 'firstname', 'x')
+        cur.column('people', 'lastname', 'x')
+        cur.column('people', 'updated_at', datetime.now())
+        cur.column('organizations_people', 'person_id', 1)
+        cur.column('organizations_people', 'organization_id', 1)
+        cur.column('tags', 'effective_id', 1)
+        cur.column('locations', 'note', 'x')
+        cur.column('organizations', 'fax', 'x')
+        cur.column('organizations', 'year_founded', datetime.now())
+        cur.column('product_services', 'name', 'x')
+        cur.column('product_services', 'organization_id', 1)
+        cur.column('organizations_users', 'user_id', 1)
+        cur.column('organizations_users', 'organization_id', 1)
+        cur.column('users', 'login', 'x')
+
+        cur.column('access_rules', 'access_type', 'PUBLIC')
+        cur.upsert('access_rules', {'id': 1, 'access_type': 'PUBLIC'}, ['id'])
+
+        cur.column('data_sharing_orgs', 'name', 'x')
+
+        cur.column('data_sharing_orgs_users', 'user_id', 1)
+        cur.column('data_sharing_orgs_users', 'data_sharing_org_id', 1)
+
+        cur.column('member_orgs_organizations', 'member_org_id', 1)
+        cur.column('member_orgs_organizations', 'organization_id', 1)
+
+        cur.column('org_types_organizations', 'org_type_id', 1)
+        cur.column('org_types_organizations', 'organization_id', 1)
+
+        cur.column('organizations_sectors', 'sector_id', 1)
+        cur.column('organizations_sectors', 'organization_id', 1)
+
+        cur.column('member_orgs', 'name', 'x')
+
+        cur.column('sectors', 'name', 'x')
+
+        cur.column('taggings', 'tag_id', 1)
+        cur.column('taggings', 'taggable_id', 1)
+        cur.column('taggings', 'taggable_type', 'x')
+
+        cur.column('data_sharing_orgs_taggables', 'data_sharing_org_id', 1)
+        cur.column('data_sharing_orgs_taggables', 'taggable_id', 1)
+        cur.column('data_sharing_orgs_taggables', 'taggable_type', 'x')
+        cur.column('data_sharing_orgs_taggables', 'verified', 1)
+
+        self.cur = cur
+
+    def get_org_type(self):
+        return self.ot
+
+    def set_name(self, name):
+        cur = self.cur
+        dso = name
+        dso_id = cur.upsert('data_sharing_orgs',
+                            {'name': name},
+                            ['name'])
+        self.dso = dso
+        self.dso_id = dso_id
+        tabs = ['locations', 'organizations', 'taggings',
+                'data_sharing_orgs_taggables',
+                'data_sharing_orgs']
+
+        def prep(tab):
+            cur.column(tab, 'dso', 'x')
+            cur.column(tab, 'dso_update', 'x')
+            cur.update(tab, {
+                'dso': dso,
+                'dso_update': 'old'
+            }, ['dso'])
+        for tab in tabs:
+            prep(tab)
+        self.tabs = tabs
+
+    def clear(self):
+        for tab in self.tabs:
+            self.cur.delete(tab, dso=self.dso, dso_update='old')
+
+
 def apply(params, state):
 
     path = merge_path = state['path']
@@ -161,50 +293,12 @@ def apply(params, state):
                                                'stonesoup.sqlite3'))
     state['sqlite_file'] = target_perm
 
-    cur = DirectToDB(dataset.connect("sqlite:///" + target))
-    ot = cur.upsert("tag_contexts", {
-        'name': 'OrgType',
-        'friendly_name': 'Organization Type'
-    }, ['name'])
-    ot = cur.upsert("tags", {
-        'name': 'OrgType',
-        'root_id': ot,
-        'root_type': "TagContext"
-    }, ['root_id', 'root_type'])
-
-    cur.column('locations', 'mailing_address1', 'x')
-    cur.column('locations', 'mailing_address2', 'x')
-    cur.column('locations', 'mailing_city', 'x')
-    cur.column('locations', 'mailing_state', 'x')
-    cur.column('locations', 'mailing_zip', 'x')
-    cur.column('locations', 'mailing_country', 'x')
-    cur.column('locations', 'mailing_county', 'x')
-    cur.column('locations', 'physical_county', 'x')
-    for tab in ['organizations', 'locations']:
-        cur.column(tab, 'created_at', datetime.now())
-        cur.column(tab, 'updated_at', datetime.now())
-    cur.column('people', 'firstname', 'x')
-    cur.column('people', 'lastname', 'x')
-    cur.column('organizations_people', 'person_id', 1)
-    cur.column('organizations_people', 'organization_id', 1)
-    cur.column('tags', 'effective_id', 1)
-    cur.column('locations', 'note', 'x')
-    cur.column('organizations', 'fax', 'x')
-    cur.column('organizations', 'year_founded', 'x')
-    cur.column('product_services', 'name', 'x')
-    cur.column('product_services', 'organization_id', 1)
-    cur.column('organizations_users', 'user_id', 1)
-    cur.column('organizations_users', 'organization_id', 1)
-    cur.column('users', 'login', 'x')
-
-    cur.column('access_rules', 'access_type', 'PUBLIC')
-    cur.upsert('access_rules', {'id': 1, 'access_type': 'PUBLIC'}, ['id'])
-
-    cur.column('data_sharing_orgs', 'name', 'x')
-    dso = params['organization']
-    dso_id = cur.upsert('data_sharing_orgs',
-                        {'name': params['organization']},
-                        ['name'])
+    tdb = TargetDB(dataset.connect("sqlite:///" + target))
+    cur = tdb.cur
+    tdb.set_name(params['organization'])
+    dso = tdb.dso
+    dso_id = tdb.dso_id
+    ot = tdb.get_org_type()
 
     org_names = []
     orgs = {}
@@ -213,19 +307,6 @@ def apply(params, state):
     tables = json.load(open(output_file))
     selection = tables['names'][0]
     lol = tables['tables'][selection]["rows"]
-
-    tabs = ['locations', 'organizations', 'taggings',
-            'data_sharing_orgs_taggables']
-
-    def prep(tab):
-        cur.column(tab, 'dso', 'x')
-        cur.column(tab, 'dso_update', 'x')
-        cur.update(tab, {
-            'dso': dso,
-            'dso_update': 'old'
-        }, ['dso'])
-    for tab in tabs:
-        prep(tab)
 
     # collect all locations for each org
     for idx, row in tqdm(list(enumerate(lol))):
@@ -339,8 +420,184 @@ def apply(params, state):
                         "taggable_id": rid,
                         "taggable_type": "Organization"
                         })
-    for tab in tabs:
-        cur.delete(tab, dso=dso, dso_update='old')
+
+    tdb.clear()
 
     from shutil import copyfile
     copyfile(target, target_perm)
+
+
+def apply_direct(target_db, name, source_db):
+    tdb = TargetDB(target_db)
+    tdb.set_name(name)
+
+    oids = {}
+    pids = {}
+
+    types = {}
+
+    caps = {
+        'OrgType': 'org_types',
+        'Sector': 'sectors',
+        'LegalStructure': 'legal_structures',
+        'MemberOrg': 'member_orgs',
+        'TagContext': 'tag_contexts'
+    }
+
+    dsos = {}
+
+    # add dsos
+    with tdb.cur.transaction() as cur:
+        print('dsos')
+        for rec in tqdm(list(source_db['data_sharing_orgs'].all())):
+            fid = rec['id']
+            dccid = '{}_{}_{}'.format(name, 'DSO', fid)
+            rec['dccid'] = dccid
+            rec['dso'] = name
+            rec['dso_update'] = 'fresh'
+            rec.pop('id')
+            oid = cur.upsert("data_sharing_orgs", rec, ['dccid'])
+            dsos[fid] = oid
+
+    # add types
+    for k in ['org_types', 'sectors', 'legal_structures', 'member_orgs', 'tag_contexts']:
+        print(k)
+        ts = types[k] = {}
+        with tdb.cur.transaction() as cur:
+            for rec in tqdm(list(source_db[k].all())):
+                fid = rec.pop('id')
+                tid = cur.upsert(k, rec, ['name'])
+                ts[fid] = tid
+
+    # add organizations
+    with tdb.cur.transaction() as cur:
+        print('organizations')
+        for org in tqdm(list(source_db['organizations'].all())):
+            fid = org['id']
+            dccid = '{}_{}_{}'.format(name, 'Organization', fid)
+            org['dccid'] = dccid
+            org['dso'] = name
+            org['dso_update'] = 'fresh'
+            pids[org['primary_location_id']] = fid
+            org.pop('id')
+            org.pop('created_by_id')
+            org.pop('updated_by_id')
+            org.pop('primary_location_id')
+            org.pop('legal_structure_id')
+            org.pop('access_rule_id')
+            org['access_rule_id'] = 1
+            oid = cur.upsert("organizations", org, ['dccid'])
+            oids[fid] = oid
+
+    # add locations
+    with tdb.cur.transaction() as cur:
+        print('locations')
+        for org in tqdm(list(source_db['locations'].all())):
+            fid = org['id']
+            dccid = '{}_{}_{}'.format(name, 'Location', fid)
+            org['dccid'] = dccid
+            org['dso'] = name
+            org['dso_update'] = 'fresh'
+            org.pop('id')
+            if org['taggable_type'] != 'Organization':
+                continue
+            org['taggable_id'] = oids[org['taggable_id']]
+            oid = cur.upsert("locations", org, ['dccid'])
+            pid = pids.get(fid)
+            if pid is not None:
+                cur.update("organizations", {
+                    'primary_location_id': oid,
+                    'id': oids[pid]
+                }, ['id'])
+
+    tids = {}
+
+    # add tags
+    with tdb.cur.transaction() as cur:
+        print('tags')
+        for rec in tqdm(list(source_db['tags'].all())):
+            fid = rec.pop('id')
+            rtype = rec['root_type']
+            rid = rec['root_id']
+            if rtype in caps:
+                rtypes = types[caps[rtype]]
+                rid = rtypes[rid]
+                rec['root_id'] = rid
+            else:
+                rec.pop('root_id')
+                rec.pop('root_type')
+            pid = rec['parent_id']
+            rec.pop('parent_id')
+            if pid is not None:
+                if pid in tids:
+                    rec['parent_id'] = tids[pid]
+            rec.pop('effective_id')
+            tid = cur.upsert("tags", rec, ['name'])
+            tids[fid] = tid
+
+    # add taggings
+    ct = 0
+    goods = 0
+    with tdb.cur.transaction() as cur:
+        print('taggings')
+        for rec in tqdm(list(source_db['taggings'].all())):
+            if rec['taggable_type'] != 'Organization':
+                continue
+            ct += 1
+            if rec['taggable_id'] is None:
+                continue
+            if rec['tag_id'] is None:
+                continue
+            fid = rec['id']
+            dccid = '{}_{}_{}'.format(name, 'Taggings', fid)
+            rec['dccid'] = dccid
+            rec.pop('id')
+            tid = rec['tag_id']
+            if tid not in tids:
+                continue
+            rec['tag_id'] = tids[tid]
+            oid = rec['taggable_id']
+            if oid not in oids:
+                continue
+            rec['taggable_id'] = oids[oid]
+            rec['dso'] = name
+            rec['dso_update'] = 'fresh'
+            cur.upsert("taggings", rec, ['dccid'])
+            goods += 1
+    print("taggings {} of which {} good".format(ct, goods))
+
+    # add dso_taggables
+    with tdb.cur.transaction() as cur:
+        print('dso_taggables')
+        for rec in tqdm(list(source_db['data_sharing_orgs_taggables'].all())):
+            fid = rec['id']
+            dccid = '{}_{}_{}'.format(name, 'DSO_taggables', fid)
+            rec['dccid'] = dccid
+            rec['dso'] = name
+            rec['dso_update'] = 'fresh'
+            rec.pop('id')
+            did = rec['data_sharing_org_id']
+            if did not in dsos:
+                continue
+            rec['data_sharing_org_id'] = dsos[did]
+            if rec['taggable_type'] != 'Organization':
+                continue
+            tid = rec['taggable_id']
+            if tid not in oids:
+                continue
+            rec['taggable_id'] = oids[tid]
+            oid = cur.upsert("data_sharing_orgs_taggables", rec, ['dccid'])
+            dsos[fid] = oid
+
+
+    tdb.clear()
+
+
+if __name__ == '__main__':
+    import sys
+    target = sys.argv[1]
+    name = sys.argv[2]
+    source = sys.argv[3]
+    target_db = dataset.connect('sqlite:///' + target)
+    source_db = dataset.connect('sqlite:///' + source)
+    apply_direct(target_db, name, source_db)
