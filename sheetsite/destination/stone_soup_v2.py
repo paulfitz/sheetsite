@@ -2,7 +2,7 @@
 
 from contextlib import contextmanager
 import dataset
-from datetime import datetime
+from datetime import date, datetime
 import json
 import os
 import re
@@ -63,15 +63,39 @@ def fix_email(email):
     return email
 
 
+def as_year(when):
+    if when is None:
+        return when
+    parts = when.split(' ')
+    for part in parts:
+        if len(part) == 4 and re.match('^[0-9]{4}$', part):
+            return date(int(part), 1, 1)
+    return None
+
+
+def fix_website(x):
+    if x is None:
+        return x
+    x = x.strip()
+    x = x.split(' ')
+    if len(x) == 0:
+        return None
+    return x[0]
+
+
 def make_org(props):
     organization = {
         'name': anykey(props, "NAME", "CompanyName"),
         'phone': anykey(props, "PHONE", "WorkPhone"),
         'email': fix_email(anykey(props, "EMAIL", "Email Address")),
-        'website': anykey(props, "WEBSITE", "Web Address", None),
+        'website': fix_website(anykey(props, "WEBSITE", "Web Address", None)),
         'description': anykey(props, "GOODS AND SERVICES", "Description", None),
+        'year_founded': as_year(anykey(props, "year_founded", "year founded", None)),
         'access_rule_id': 1
         }
+    if 'stamp' in props:
+        if props['stamp'] is not None:
+            organization['updated_at'] = date(int(props['stamp']), 1, 1)
     return organization
 
 
@@ -108,6 +132,9 @@ class DirectToDB(object):
 
     def column(self, tbl, column, example):
         return self.cur[tbl].create_column_by_example(column, example)
+
+    def index(self, tbl, columns):
+        return self.cur[tbl].create_index(columns)
 
     def insert(self, tbl, values):
         return self.cur[tbl].insert(values)
@@ -153,7 +180,7 @@ class TargetDB(object):
 
     def __init__(self, target_db):
         cur = DirectToDB(target_db)
-        self.ot = cur.upsert("tag_contexts", {
+        cur.upsert("tag_contexts", {
             'name': 'OrgType',
             'friendly_name': 'Organization Type'
         }, ['name'])
@@ -169,17 +196,19 @@ class TargetDB(object):
             'name': 'LegalStructure',
             'friendly_name': 'Legal Structure'
         }, ['name'])
-        cur.upsert("tags", {
+        dcc = cur.upsert("tags", {
             'name': 'dcc',
             'root_id': 1,
             'root_type': "TagWorld"
         }, ['name'])
         for name in ['OrgType', 'Sector', 'MemberOrg', 'LegalStructure']:
             cur.upsert("tags", {
-                'name': 'OrgType',
+                'name': name,
                 'root_id': cur.find_one('tag_contexts', name=name)['id'],
-                'root_type': "TagContext"
+                'root_type': "TagContext",
+                'parent_id': dcc
             }, ['name'])
+        self.ot = cur.find_one("tags", name='OrgType')['id']
         cur.upsert("tag_worlds", {
             'name': 'dcc',
         }, ['name'])
@@ -247,6 +276,20 @@ class TargetDB(object):
         cur.column('data_sharing_orgs_taggables', 'taggable_type', 'x')
         cur.column('data_sharing_orgs_taggables', 'verified', 1)
 
+        cur.index('locations', ['taggable_id', 'taggable_type'])
+        cur.index('product_services', ['organization_id'])
+        cur.index('organizations_sectors', ['organization_id'])
+        cur.index('organizations_sectors', ['sector_id'])
+        cur.index('organizations_people', ['organization_id'])
+        cur.index('organizations_people', ['person_id'])
+        cur.index('tags', ['name'])
+        cur.index('tags', ['root_id', 'root_type'])
+        cur.index('tags', ['parent_id'])
+        cur.index('taggings', ['tag_id'])
+        cur.index('taggings', ['taggable_id', 'taggable_type'])
+        cur.index('tag_contexts', ['name'])
+        cur.index('tag_worlds', ['name'])
+
         self.cur = cur
 
     def get_org_type(self):
@@ -310,7 +353,7 @@ def apply(params, state):
 
     # collect all locations for each org
     for idx, row in tqdm(list(enumerate(lol))):
-        name = anykey(row, 'NAME', 'CompanyName')
+        name = anykey(row, 'row_group', 'NAME', 'CompanyName')
         if not(name in orgs):
             orgs[name] = []
             org_names.append(name)
@@ -388,6 +431,10 @@ def apply(params, state):
                 tid = cur.insert("org_types", {
                         'name': typ
                         })
+            else:
+                tid = v[0]['id']
+            nid = cur.find_one('tags', root_id=tid, root_type='OrgType')
+            if nid is None:
                 tid = cur.insert("tags", {
                         'name': typ,
                         'root_id': tid,
@@ -395,8 +442,7 @@ def apply(params, state):
                         'parent_id': ot
                         })
             else:
-                tid = v[0]['id']
-                tid = cur.find_one('tags', root_id=tid, root_type='OrgType')['id']
+                tid = nid['id']
             cur.upsert("taggings", {
                 "tag_id": tid,
                 "taggable_id": rid,
@@ -416,10 +462,12 @@ def apply(params, state):
                 else:
                     tid = v[0]['id']
                 cur.insert("taggings", {
-                        "tag_id": tid,
-                        "taggable_id": rid,
-                        "taggable_type": "Organization"
-                        })
+                    "tag_id": tid,
+                    "taggable_id": rid,
+                    "taggable_type": "Organization",
+                    "dso": dso,
+                    "dso_update": "fresh"
+                })
 
     tdb.clear()
 

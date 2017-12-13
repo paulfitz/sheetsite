@@ -43,6 +43,7 @@ setup(
         "pygsheets",
         "pyyaml",
         "requests",
+        "six",
         "tqdm"
     ],
     extras_require={
@@ -50,8 +51,7 @@ setup(
             "celery",
             "jinja2",
             "premailer",
-            "redis",
-            "six"
+            "redis"
         ]
     }
 )
