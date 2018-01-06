@@ -13,14 +13,7 @@ tweaks:
 
 import copy
 import re
-
-
-def sanity_stick(locs):
-    if len(locs) <= 1:
-        return locs
-    if len(re.sub(r'[^,]', '', locs[0])) < 3:
-        return [' '.join(locs)]
-    return locs
+import six
 
 
 def apply(wb, params):
@@ -41,11 +34,12 @@ def apply(wb, params):
                 print(">>>>", cell)
                 orows.append(row)
                 if cell is not None:
-                    for part in cell:
-                        nrow = copy.deepcopy(row)
-                        nrow[column] = None
-                        nrow[target] = part
-                        orows.append(nrow)
+                    if not isinstance(cell, six.string_types):
+                        for part in cell:
+                            nrow = copy.deepcopy(row)
+                            nrow[column] = None
+                            nrow[target] = part
+                            orows.append(nrow)
             t['rows'] = orows
     if not active:
         raise KeyError(column + " / " + target)

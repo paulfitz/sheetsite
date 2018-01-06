@@ -150,12 +150,17 @@ class GeoCache(object):
                 return zip
 
             v = None
+            xaddress = address
             for delay in [1, 2, 4, 8]:
                 r = requests.get("http://maps.googleapis.com/maps/api/geocode/json",
-                                 params={"sensor": "false", "address": address})
+                                 params={"sensor": "false", "address": xaddress})
                 time.sleep(delay)
                 v = json.loads(r.text)
                 if 'status' in v:
+                    if v['status'] == 'ZERO_RESULTS':
+                        if ',' in xaddress:
+                            xaddress = xaddress.split(',', 1)[1]
+                            continue
                     if v['status'] != 'OVER_QUERY_LIMIT':
                         break
             coord = v["results"][0]["geometry"]["location"]
@@ -184,4 +189,6 @@ class GeoCache(object):
 
 if __name__ == '__main__':
     cache = GeoCache("cache.db")
-    print(cache.find("305 Memorial Dr, Cambridge, MA"))
+    # print(cache.find("305 Memorial Dr, Cambridge, MA"))
+    # print(cache.find("Chittenden, Franklin County, Connecticut, United States"))
+    print(cache.find("Lamoille County, Connecticut, United States"))

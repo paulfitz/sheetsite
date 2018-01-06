@@ -1,5 +1,6 @@
 def apply(wb, params):
     columns = params['columns']
+    default_value = params['default']
     table = params.get('table')
     active = False
     for name, t in wb['tables'].items():
@@ -10,9 +11,11 @@ def apply(wb, params):
             for row in t['rows']:
                 v = None
                 for column in columns:
-                    if v is not None:
+                    if v is not None and v != "":
                         break
                     v = row[column]
+                if v is None or v == '':
+                    v = default_value
                 row[columns[0]] = v
     if not active:
         raise KeyError(column)

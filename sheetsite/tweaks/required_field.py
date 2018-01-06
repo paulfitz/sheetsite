@@ -13,8 +13,13 @@ def apply(wb, params):
             orows = []
             for row in t['rows']:
                 v = row[column]
-                if (((v is not None and v != "" and (v == value or value is None)) or
-                     (not_value is not None and v != not_value))):
+                if value is not None:
+                    if v == value:
+                        orows.append(row)
+                elif not_value is not None:
+                    if v != not_value:
+                        orows.append(row)
+                elif v is not None and v != '':
                     orows.append(row)
             t['rows'] = orows
     if not active:

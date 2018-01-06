@@ -66,6 +66,10 @@ def fix_email(email):
 def as_year(when):
     if when is None:
         return when
+    when = str(when)
+    when = when.replace('.', ' ')
+    when = when.replace('-', ' ')
+    when = when.replace('/', ' ')
     parts = when.split(' ')
     for part in parts:
         if len(part) == 4 and re.match('^[0-9]{4}$', part):
@@ -163,6 +167,8 @@ class DirectToDB(object):
         with self.cur as x:
             yield DirectToDB(x)
 
+def is_blank(x):
+    return x is None or x == ""
 
 def blanky(x):
     if x == "" or x is None:
@@ -226,6 +232,7 @@ class TargetDB(object):
         cur.column('locations', 'mailing_zip', 'x')
         cur.column('locations', 'mailing_country', 'x')
         cur.column('locations', 'mailing_county', 'x')
+        cur.column('locations', 'physical_zip', 'x')
         cur.column('locations', 'physical_county', 'x')
         for tab in ['organizations', 'locations']:
             cur.column(tab, 'dccid', 'x')
@@ -289,6 +296,9 @@ class TargetDB(object):
         cur.index('taggings', ['taggable_id', 'taggable_type'])
         cur.index('tag_contexts', ['name'])
         cur.index('tag_worlds', ['name'])
+        cur.index('data_sharing_orgs_taggables', ['data_sharing_org_id'])
+        cur.index('data_sharing_orgs_taggables', ['taggable_type'])
+        cur.index('data_sharing_orgs_taggables', ['taggable_id', 'taggable_type'])
 
         self.cur = cur
 
@@ -363,6 +373,15 @@ def apply(params, state):
 
     for idx, name in tqdm(list(enumerate(org_names))):
         rows = orgs[name]
+        print("Org {} / {} has {} rows".format(idx, name, len(rows)))
+        lct = 0
+        for row in rows:
+            loc = make_loc(row, None)
+            if not(is_blank(loc['physical_state']) and is_blank(loc['physical_country'])
+                    and is_blank(loc['physical_address1'])):
+                lct += 1
+        if lct == 0:
+            continue
         common = get_common_props(rows)
         main = get_main_props(rows)
         # print(name + " : " + str(common) + " " + str(len(rows)))
