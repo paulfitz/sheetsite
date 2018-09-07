@@ -1,3 +1,13 @@
+'''
+Apply a python formatting string to a column.
+
+tweaks:
+  formula:
+    formula: "%05d"
+    column: zip
+    table: addresses  # optional
+'''
+
 def apply(wb, params):
     formula = params['formula']
     column = params['column']

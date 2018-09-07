@@ -1,3 +1,16 @@
+'''
+Replaces all blank values in a column with the first non-blank value in a series
+of columns, falling back on a default_value if all are blank.
+```
+tweaks:
+  coalesce:
+    # the first of the following list of columns is the one that is modified
+    columns: first_priority_column second_priority_column third_priority_column
+    default_value: N/A
+    table: sheet1    # optional
+```
+'''
+
 def apply(wb, params):
     columns = params['columns']
     default_value = params['default']

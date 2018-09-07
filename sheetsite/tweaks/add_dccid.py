@@ -1,5 +1,7 @@
 '''
 Early add id - this stuff needs to get reworked
+
+(stone soup only)
 '''
 
 import json
