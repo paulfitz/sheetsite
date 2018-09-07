@@ -51,7 +51,7 @@ The file should have two stanzas, `source` specifying where to get
 data from, and `destination` specifying where to put it.  This
 examples reads a private google spreadsheet and saves it as
 `sheet.xlsx`.  The key comes from the url of the spreadsheet.
-The credentials file is something you [get from google](https://pygsheets.readthedocs.io/en/latest/authorizing.html).
+The credentials file is something you [get from google](https://pygsheets.readthedocs.io/en/stable/authorizing.html).
 
 Here's an example that outputs json:
 
