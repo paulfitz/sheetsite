@@ -1,11 +1,14 @@
 import os
+from sheetsite.source.csv import read_source_csv
 from sheetsite.source.google import read_source_google
 from sheetsite.source.excel import read_source_excel
 from sheetsite.source.json import read_source_json
 
+
 def read_source(params):
 
     readers = {
+        '.csv': read_source_csv,
         'google-sheets': read_source_google,
         '.json': read_source_json,
         '.xls': read_source_excel,

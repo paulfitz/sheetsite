@@ -14,6 +14,10 @@ def apply(wb, params):
                     row[column] = "Connecticut"
                     # important to replace this or geocoder will sporadically
                     # interpret it as Court or Crescent or the like
+                if code == "RI":
+                    row[column] = "Rhode Island"
+                if code == "MA":
+                    row[column] = "Massachusetts"
 
     if not active:
         raise KeyError(column)

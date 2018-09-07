@@ -4,6 +4,7 @@ import json
 import os
 from oauth2client.client import SignedJwtAssertionCredentials
 import re
+from sheetsite.jsonify import dump
 
 
 class Spreadsheet(object):
@@ -59,7 +60,7 @@ class Spreadsheet(object):
             ws['columns'] = columns
             ws['rows'] = [OrderedDict(zip(columns, row)) for row in rows]
         with open(output_file, 'w') as f:
-            json.dump(result, f, indent=2)
+            dump(result, f, indent=2)
         return True
 
     def clean_cells(self, vals):

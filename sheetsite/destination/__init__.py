@@ -7,6 +7,7 @@ from sheetsite.destination.git import write_destination_git
 from sheetsite.destination.json_ss import write_destination_json
 from sheetsite.destination.stone_soup import write_destination_stone_soup
 from sheetsite.destination.sqlite_ss import write_destination_sqlite
+from sheetsite.destination.csv_ss import write_destination_csv
 
 def write_destination_chain(params, state):
     writers = params['chain']
@@ -33,6 +34,7 @@ def write_destination(params, state):
         '.json': write_destination_json,
         '.xlsx': write_destination_excel,
         '.xls': write_destination_excel,
+        '.csv': write_destination_csv,
         'drop': write_destination_drop,
         'chain': write_destination_chain
     }

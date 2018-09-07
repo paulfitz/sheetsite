@@ -111,7 +111,7 @@ class Site(object):
         for idx, cell in enumerate(vals[0]):
             if cell is None or len(cell) == 0 or cell[0] == '(':
                 hide_column[idx] = True
-            if cell == "Other Addresses":
+            if cell == "Other Addresses (deprecated)":
                 split_column[idx] = '\n'
 
         results = []

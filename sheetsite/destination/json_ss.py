@@ -1,4 +1,5 @@
 import json
+from sheetsite.jsonify import dump, dumps
 from sheetsite.json_spreadsheet import JsonSpreadsheet
 
 
@@ -7,8 +8,8 @@ def write_destination_json(params, state):
     output_file = params['output_file']
     result = JsonSpreadsheet.as_dict(workbook)
     if output_file is None:
-        print(json.dumps(result, indent=2))
+        print(dumps(result, indent=2))
     else:
         with open(output_file, 'w') as f:
-            json.dump(result, f, indent=2)
+            dump(result, f, indent=2)
     return True
