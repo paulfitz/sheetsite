@@ -487,6 +487,25 @@ def apply(params, state):
                     "dso": dso,
                     "dso_update": "fresh"
                 })
+        if 'tags' in main:
+            dex = main['tags']
+            if dex:
+                for dex in [x.strip() for x in dex.lower().split(';;')]:
+                    v = list(cur.find('tags', name=dex))
+                    tid = None
+                    if len(v) == 0:
+                        tid = cur.insert("tags", {
+                                'name': dex
+                                })
+                    else:
+                        tid = v[0]['id']
+                    cur.insert("taggings", {
+                        "tag_id": tid,
+                        "taggable_id": rid,
+                        "taggable_type": "Organization",
+                        "dso": dso,
+                        "dso_update": "fresh"
+                    })
 
     tdb.clear()
 
