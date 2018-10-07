@@ -44,9 +44,10 @@ class JsonSheet(object):
         self.columns = data['columns']
 
     def get_all_values(self):
-        results = [self.columns]
+        cols = [c for c in self.columns if c is not None]
+        results = [cols]
         for row in self.data['rows']:
-            results.append([row[c] for c in self.columns])
+            results.append([row[c] for c in cols])
         return results
 
     @property
