@@ -36,7 +36,7 @@ setup(
         "License :: OSI Approved :: MIT License"
     ],
     install_requires=[
-        "daff",
+        "daff>=1.3.39",
         "dataset>=1.0.2",
         "oauth2client>=2.0.0",
         "openpyxl",

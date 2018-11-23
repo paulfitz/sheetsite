@@ -12,10 +12,10 @@ class Sheets(object):
     def table(self, name):
         return Table(self.data['tables'][name], name)
 
-    def tables_with_columns(self, *columns, require=True):
+    def tables_with_columns(self, *columns, **keys):
         lst = [self.table(name) for name in self.data['names']
                 if set(columns) <= set(self.data['tables'][name]['columns'])]
-        if require and len(lst) == 0:
+        if keys.get('require') and len(lst) == 0:
             raise Exception('no table found with column(s) {}'.format(columns))
         return lst
 

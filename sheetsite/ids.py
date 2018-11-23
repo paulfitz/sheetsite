@@ -9,8 +9,8 @@ def process_ids(prev_file, curr_file, prev_id_file, id_file):
     dapp = daff.Coopy(io)
     if not os.path.exists(prev_file):
         prev_file = curr_file
-    v1 = dapp.loadTable(prev_file)
-    v2 = dapp.loadTable(curr_file)
+    v1 = dapp.loadTable(prev_file, 'local')
+    v2 = dapp.loadTable(curr_file, 'remote')
     flags = daff.CompareFlags()
     flags.allow_nested_cells = True
     alignment = daff.compareTables3(None, v1, v2, flags).align()
