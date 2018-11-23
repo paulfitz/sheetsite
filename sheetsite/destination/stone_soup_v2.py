@@ -95,7 +95,8 @@ def make_org(props):
         'website': fix_website(anykey(props, "WEBSITE", "Web Address", None)),
         'description': anykey(props, "GOODS AND SERVICES", "Description", None),
         'year_founded': as_year(anykey(props, "year_founded", "year founded", None)),
-        'access_rule_id': 1
+        'access_rule_id': 1,
+        'source_grouping': anykey(props, 'source_grouping', None)
         }
     if 'stamp' in props:
         if props['stamp'] is not None:
@@ -115,14 +116,14 @@ def safe_access(props, key):
 def make_loc(props, rid):
     location = {
         'physical_address1': anykey(props, "Street Address",
-                                    "Street", "Physical Address"),
-        'physical_address2': None,
+                                    "Street", "Physical Address", "street1"),
+        'physical_address2': anykey(props, "street2", None),
         'physical_city': anykey(props, "city"),
         'physical_state': anykey(props, "state"),
         'physical_zip': anykey(props, "zip", "postal code"),
         'physical_country': anykey(props, "country"),
-        'latitude': anykey(props, "Latitude", "lat", None),
-        'longitude': anykey(props, "Longitude", "lng", None),
+        'latitude': anykey(props, "lat", "Latitude", "latitude", None),
+        'longitude': anykey(props, "lng", "Longitude", "longitude", None),
         'taggable_id': rid,
         'taggable_type': "Organization",
         'dccid': anykey(props, 'dccid')
@@ -247,6 +248,7 @@ class TargetDB(object):
         cur.column('locations', 'note', 'x')
         cur.column('organizations', 'fax', 'x')
         cur.column('organizations', 'year_founded', datetime.now())
+        cur.column('organizations', 'source_grouping', 'x')
         cur.column('product_services', 'name', 'x')
         cur.column('product_services', 'organization_id', 1)
         cur.column('organizations_users', 'user_id', 1)
@@ -490,17 +492,24 @@ def apply(params, state):
         if 'tags' in main:
             dex = main['tags']
             if dex:
-                for dex in [x.strip() for x in dex.lower().split(';;')]:
-                    v = list(cur.find('tags', name=dex))
-                    tid = None
-                    if len(v) == 0:
-                        tid = cur.insert("tags", {
-                                'name': dex
-                                })
-                    else:
-                        tid = v[0]['id']
+                for dex in [x.strip() for x in dex.split(';;')]:
+                    parts = dex.split('|')
+                    if len(parts) > 0:
+                        pass
+                    parent_id = None
+                    for part in parts:
+                        v = list(cur.find('tags', name=part, parent_id=parent_id))
+                        tid = None
+                        if len(v) == 0:
+                            tid = cur.insert("tags", {
+                                    'name': part,
+                                    'parent_id': parent_id
+                                    })
+                        else:
+                            tid = v[0]['id']
+                        parent_id = tid
                     cur.insert("taggings", {
-                        "tag_id": tid,
+                        "tag_id": parent_id,
                         "taggable_id": rid,
                         "taggable_type": "Organization",
                         "dso": dso,
