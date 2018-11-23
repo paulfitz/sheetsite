@@ -492,8 +492,12 @@ def apply(params, state):
         if 'tags' in main:
             dex = main['tags']
             if dex:
-                for dex in [x.strip() for x in dex.split(';;')]:
-                    parts = dex.split('|')
+                try:
+                    lst = [x.strip() for x in dex.split(';;')]
+                except:
+                    lst = dex
+                for idex in lst:
+                    parts = idex.split('|')
                     if len(parts) > 0:
                         pass
                     parent_id = None

@@ -1,6 +1,7 @@
 import daff
 import os
 from sheetsite.ids import process_ids
+from sheetsite.sheet import Sheets
 from sheetsite.site import Site
 from sheetsite.source import read_source
 from sheetsite.destination import write_destination
@@ -53,7 +54,11 @@ def apply_chain(site, path):
     if tweaks:
         import json
         wj = json.load(open(raw_file, 'r'))
-        for tweak, params in tweaks.items():
+        if hasattr(tweaks, 'items'):
+            tweak_items = tweaks.items()
+        else:
+            tweak_items = [[params['tweak'], params] for params in tweaks]
+        for tweak, params in tweak_items:
             print("Working on tweak", json.dumps(tweak))
             if 'tweak' in params:
                 tweak = params['tweak']
@@ -66,9 +71,9 @@ def apply_chain(site, path):
             except AttributeError:
                 target = mod.apply
             if ct == 3:
-                target(wj, params, state)
+                target(Sheets(wj), params, state)
             else:
-                target(wj, params)
+                target(Sheets(wj), params)
         from sheetsite.json_spreadsheet import JsonSpreadsheet
         ss.workbook = JsonSpreadsheet(None, data=wj)
 

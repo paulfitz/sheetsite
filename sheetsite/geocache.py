@@ -99,9 +99,9 @@ class GeoCache(object):
 
     def find_without_cache(self, address):
         print("--- geocoding [{}]".format(address))
-        if self.geocoder == "datasciencetoolkit":
+        if self.geocoder == "datasciencetoolkit" or self.geocoder is None:
             return self.find_without_cache_dstk(address)
-        if self.geocoder == "google" or self.geocoder is None:
+        if self.geocoder == "google":
             return self.find_without_cache_gmap(address)
         if self.geocoder == "dummy":
             return self.find_without_cache_dummy(address)
