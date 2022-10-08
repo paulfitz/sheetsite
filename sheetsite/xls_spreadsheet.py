@@ -24,7 +24,10 @@ class XlsSheet(object):
             output_row = []
             output.append(output_row)
             for j, cell in enumerate(row):
-                output_row.append(cell.value)
+                try:
+                    output_row.append(cell.value)
+                except:
+                    output_row.append(None)
         return output
 
     @property

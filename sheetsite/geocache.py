@@ -6,9 +6,10 @@ import requests
 import six
 import time
 
+GEOCODER = 'google' if 'GOOGLE_GEOCODER_KEY' in os.environ else None
 
 class GeoCache(object):
-    def __init__(self, filename, geocoder=None, group_key=None):
+    def __init__(self, filename, geocoder=GEOCODER, group_key=None):
         logging.basicConfig()
         logging.getLogger("dataset.persistence.table").setLevel(
             logging.ERROR
@@ -151,11 +152,13 @@ class GeoCache(object):
 
             v = None
             xaddress = address
+            key = os.environ['GOOGLE_GEOCODER_KEY']
             for delay in [1, 2, 4, 8]:
-                r = requests.get("http://maps.googleapis.com/maps/api/geocode/json",
-                                 params={"sensor": "false", "address": xaddress})
+                r = requests.get("https://maps.googleapis.com/maps/api/geocode/json",
+                                 params={"sensor": "false", "address": xaddress, "key": key})
                 time.sleep(delay)
                 v = json.loads(r.text)
+                print("v", v)
                 if 'status' in v:
                     if v['status'] == 'ZERO_RESULTS':
                         if ',' in xaddress:

@@ -14,10 +14,10 @@ def apply(wb, params):
             for row in t['rows']:
                 v = row[column]
                 if value is not None:
-                    if v == value:
+                    if str(v) == str(value):
                         orows.append(row)
                 elif not_value is not None:
-                    if v != not_value:
+                    if str(v) != str(not_value):
                         orows.append(row)
                 elif v is not None and v != '':
                     orows.append(row)

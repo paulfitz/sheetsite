@@ -235,6 +235,22 @@ def write_destination_stone_soup(params, state):
                         "taggable_id": rid,
                         "taggable_type": "Organization"
                         })
+        dex = main['IndexTilde']
+        if dex:
+            for dex in [x.strip() for x in dex.lower().split(' ~ ')]:
+                v = cur.execute('SELECT id FROM tags WHERE name = ?',[dex]).fetchall()
+                tid = None
+                if len(v) == 0:
+                    tid = insert_hash(cur,"tags",{
+                            'name': dex
+                            })
+                else:
+                    tid = v[0][0]
+                insert_hash(cur,"taggings",{
+                        "tag_id": tid,
+                        "taggable_id": rid,
+                        "taggable_type": "Organization"
+                        })
 
     with open('junk.json', 'w') as outfile:
       json.dump(organizations, outfile)

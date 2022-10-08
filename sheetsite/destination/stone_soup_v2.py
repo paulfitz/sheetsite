@@ -8,6 +8,7 @@ import os
 import re
 from tqdm import tqdm
 import uuid
+import dateutil.parser
 
 
 def get_prop(key, rows):
@@ -101,6 +102,9 @@ def make_org(props):
     if 'stamp' in props:
         if props['stamp'] is not None:
             organization['updated_at'] = date(int(props['stamp']), 1, 1)
+    if 'updated_at' in props:
+        if props['updated_at'] is not None:
+            organization['updated_at'] = dateutil.parser.parse(props['updated_at'])
     return organization
 
 
@@ -122,6 +126,12 @@ def make_loc(props, rid):
         'physical_state': anykey(props, "state"),
         'physical_zip': anykey(props, "zip", "postal code"),
         'physical_country': anykey(props, "country"),
+        'mailing_address1': anykey(props, "mailing_address1", None),
+        'mailing_address2': anykey(props, "mailing_address2", None),
+        'mailing_city': anykey(props, "mailing_city", None),
+        'mailing_state': anykey(props, "mailing_state", None),
+        'mailing_zip': anykey(props, "mailing_zip", None),
+        'mailing_country': anykey(props, "mailing_country", None),
         'latitude': anykey(props, "lat", "Latitude", "latitude", None),
         'longitude': anykey(props, "lng", "Longitude", "longitude", None),
         'taggable_id': rid,
@@ -342,6 +352,9 @@ def apply(params, state):
 
     if 'merge_path' in params:
         merge_path = params['merge_path']
+    elif 'MERGE_PATH' in os.environ:
+        merge_path = os.environ['MERGE_PATH']
+
     target = os.path.abspath(os.path.join(merge_path,
                                           'stonesoup.sqlite3'))
     target_perm = os.path.abspath(os.path.join(path,

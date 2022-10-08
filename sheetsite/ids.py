@@ -21,7 +21,7 @@ def process_ids(prev_file, curr_file, prev_id_file, id_file):
         in_refs = {}
     out_refs = {}
     for part in alignment.comp.child_order:
-        comp = alignment.comp.children.get(part)
+        comp = alignment.comp.children.h.get(part)
         nalignment = comp.alignment
         order = nalignment.toOrder().getList()
         v1 = comp.a

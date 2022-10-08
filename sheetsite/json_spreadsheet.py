@@ -9,8 +9,11 @@ class JsonSpreadsheet(object):
             self.data = data
         else:
             self.data = json.load(open(filename))
-        self.sheets = [JsonSheet(n, self.data['tables'][n])
-                       for n in self.data['names']]
+        if 'tables' in self.data:
+            self.sheets = [JsonSheet(n, self.data['tables'][n])
+                           for n in self.data['names']]
+        else:
+            self.sheets = [JsonSheet('sheet', self.data['data'])]
 
     def worksheets(self):
         return self.sheets
@@ -41,13 +44,19 @@ class JsonSheet(object):
     def __init__(self, name, data):
         self.name = name
         self.data = data
-        self.columns = data['columns']
+        if isinstance(data, list):
+            print("WORKING WITH", data[0].keys())
+            self.columns = data[0].keys()
+            self.data = {"rows": data}
+        else:
+            self.columns = data['columns']
 
     def get_all_values(self):
         cols = [c for c in self.columns if c is not None]
         results = [cols]
         for row in self.data['rows']:
-            results.append([row[c] for c in cols])
+            print("Working on", row)
+            results.append([row.get(c) for c in cols])
         return results
 
     @property
