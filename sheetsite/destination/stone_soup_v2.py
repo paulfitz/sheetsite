@@ -97,7 +97,8 @@ def make_org(props):
         'description': anykey(props, "GOODS AND SERVICES", "Description", None),
         'year_founded': as_year(anykey(props, "year_founded", "year founded", None)),
         'access_rule_id': 1,
-        'source_grouping': anykey(props, 'source_grouping', None)
+        'source_grouping': anykey(props, 'source_grouping', None),
+        'mode': anykey(props, 'mode', None)
         }
     if 'stamp' in props:
         if props['stamp'] is not None:
